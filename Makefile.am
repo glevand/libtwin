@@ -11,9 +11,9 @@ INCLUDES= @X_CFLAGS@ @WARN_CFLAGS@
 #
 #lib_LTLIBRARIES = libtwin.la
 
-bin_PROGRAMS = xtwin
+bin_PROGRAMS = xtwin ftwin
 
-xtwin_SOURCES = \
+base_SOURCES = \
 	twin.h \
 	twin_box.c \
 	twin_button.c \
@@ -44,8 +44,6 @@ xtwin_SOURCES = \
 	twin_widget.c \
 	twin_window.c \
 	twin_work.c \
-	twin_x11.c \
-	twin_x11.h \
 	twinint.h \
 	twin_clock.c \
 	twin_clock.h \
@@ -53,6 +51,11 @@ xtwin_SOURCES = \
 	twin_calc.h \
 	twin_text.c \
 	twin_text.h \
+	twin_cursor.c
+
+xtwin_SOURCES = $(base_SOURCES) \
+	twin_x11.c \
+	twin_x11.h \
 	twin_demo.c \
 	twin_demo.h \
 	twin_hello.c \
@@ -63,4 +66,21 @@ xtwin_SOURCES = \
 	twin_demospline.h \
 	xtwin.c
 
+ftwin_SOURCES = $(base_SOURCES) \
+	twin_fbdev.c \
+	twin_fbdev.h \
+	twin_linux_mouse.c \
+	twin_linux_mouse.h \
+	twin_demo.c \
+	twin_demo.h \
+	twin_hello.c \
+	twin_hello.h \
+	twin_demoline.c \
+	twin_demoline.h \
+	twin_demospline.c \
+	twin_demospline.h \
+	ftwin.c
+
 xtwin_LDADD = @X_LIBS@ -lm
+
+ftwin_LDADD = -lm
