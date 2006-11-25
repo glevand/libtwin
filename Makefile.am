@@ -50,8 +50,7 @@ base_SOURCES = \
 	twin_calc.c \
 	twin_calc.h \
 	twin_text.c \
-	twin_text.h \
-	twin_cursor.c
+	twin_text.h
 
 xtwin_SOURCES = $(base_SOURCES) \
 	twin_x11.c \
