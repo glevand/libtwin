@@ -18,6 +18,7 @@ xtwin_SOURCES = \
 	twin_box.c \
 	twin_button.c \
 	twin_convolve.c \
+	twin_cursor.c \
 	twin_dispatch.c \
 	twin_draw.c \
 	twin_glyphs.c \

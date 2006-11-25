@@ -153,6 +153,15 @@ typedef struct _twin_screen {
      */
     twin_pixmap_t	*pointer;
     /*
+     * mouse image (optional)
+     */
+    twin_pixmap_t	*cursor;
+    twin_coord_t	curs_hx;
+    twin_coord_t	curs_hy;
+    twin_coord_t	curs_x;
+    twin_coord_t	curs_y;
+
+    /*
      * Output size
      */
     twin_coord_t	width, height;
@@ -544,6 +553,15 @@ twin_fill (twin_pixmap_t    *dst,
 	   twin_coord_t	    top,
 	   twin_coord_t	    right,
 	   twin_coord_t	    bottom);
+
+/*
+ * twin_cursor.c
+ */
+twin_pixmap_t *twin_get_default_cursor(int *hx, int *hy);
+
+twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
+				  int *hx, int *hy);
+
 
 /*
  * twin_event.c
@@ -969,6 +987,10 @@ twin_screen_set_background (twin_screen_t *screen, twin_pixmap_t *pixmap);
 
 twin_pixmap_t *
 twin_screen_get_background (twin_screen_t *screen);
+
+void
+twin_screen_set_cursor (twin_screen_t *screen, twin_pixmap_t *pixmap,
+			twin_fixed_t hotspot_x, twin_fixed_t hotspot_y);
 
 twin_bool_t
 twin_screen_dispatch (twin_screen_t *screen,

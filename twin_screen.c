@@ -28,7 +28,7 @@ twin_screen_create (twin_coord_t	width,
 		    twin_put_span_t	put_span,
 		    void		*closure)
 {
-    twin_screen_t   *screen = malloc (sizeof (twin_screen_t));
+    twin_screen_t   *screen = calloc (1, sizeof (twin_screen_t));
     if (!screen)
 	return 0;
     screen->top = 0;
@@ -93,6 +93,15 @@ twin_screen_damage (twin_screen_t *screen,
 		    twin_coord_t left, twin_coord_t top,
 		    twin_coord_t right, twin_coord_t bottom)
 {
+    if (left < 0)
+	left = 0;
+    if (top < 0)
+	top = 0;
+    if (right > screen->width)
+	right = screen->width;
+    if (bottom > screen->height)
+	bottom = screen->height;
+
     if (screen->damage.left == screen->damage.right)
     {
 	screen->damage.left = left;
@@ -131,6 +140,37 @@ twin_screen_damaged (twin_screen_t *screen)
 	    screen->damage.top < screen->damage.bottom);
 }
 
+static void
+twin_screen_span_pixmap(twin_screen_t *screen, twin_argb32_t *span,
+			twin_pixmap_t *p, twin_coord_t y,
+			twin_coord_t left, twin_coord_t right)
+{
+    twin_pointer_t  dst;
+    twin_source_u	src;
+    twin_coord_t	p_left, p_right;
+		
+    /* bounds check in y */
+    if (y < p->y)
+	return;
+    if (p->y + p->height <= y)
+	return;
+    /* bounds check in x*/
+    p_left = left;
+    if (p_left < p->x)
+	p_left = p->x;
+    p_right = right;
+    if (p_right > p->x + p->width)
+	p_right = p->x + p->width;
+    if (p_left >= p_right)
+	return;
+    dst.argb32 = span + (p_left - left);
+    src.p = twin_pixmap_pointer (p, p_left - p->x, y - p->y);
+    if (p->format == TWIN_RGB16)
+	_twin_rgb16_source_argb32 (dst, src, p_right - p_left);
+    else
+	_twin_argb32_over_argb32 (dst, src, p_right - p_left);
+}
+
 void
 twin_screen_update (twin_screen_t *screen)
 {
@@ -139,6 +179,11 @@ twin_screen_update (twin_screen_t *screen)
     twin_coord_t	right = screen->damage.right;
     twin_coord_t	bottom = screen->damage.bottom;
     
+    if (right > screen->width)
+	right = screen->width;
+    if (bottom > screen->height)
+	bottom = screen->height;
+
     if (!screen->disable && left < right && top < bottom)
     {
 	twin_argb32_t	*span;
@@ -181,33 +226,14 @@ twin_screen_update (twin_screen_t *screen)
 	    }
 	    else
 		memset (span, 0xff, width * sizeof (twin_argb32_t));
+
 	    for (p = screen->bottom; p; p = p->up)
-	    {
-		twin_pointer_t  dst;
-		twin_source_u	src;
-		twin_coord_t	p_left, p_right;
-		
-		/* bounds check in y */
-		if (y < p->y)
-		    continue;
-		if (p->y + p->height <= y)
-		    continue;
-		/* bounds check in x*/
-		p_left = left;
-		if (p_left < p->x)
-		    p_left = p->x;
-		p_right = right;
-		if (p_right > p->x + p->width)
-		    p_right = p->x + p->width;
-		if (p_left >= p_right)
-		    continue;
-		dst.argb32 = span + (p_left - left);
-		src.p = twin_pixmap_pointer (p, p_left - p->x, y - p->y);
-		if (p->format == TWIN_RGB16)
-		    _twin_rgb16_source_argb32 (dst, src, p_right - p_left);
-		else
-		    _twin_argb32_over_argb32 (dst, src, p_right - p_left);
-	    }
+		twin_screen_span_pixmap(screen, span, p, y, left, right);
+
+	    if (screen->cursor)
+		twin_screen_span_pixmap(screen, span, screen->cursor,
+					y, left, right);
+
 	    (*screen->put_span) (left, y, right, span, screen->closure);
 	}
 	free (span);
@@ -253,6 +279,50 @@ twin_screen_get_background (twin_screen_t *screen)
     return screen->background;
 }
 
+static void
+twin_screen_damage_cursor(twin_screen_t *screen)
+{
+    twin_screen_damage (screen,
+			screen->cursor->x,
+			screen->cursor->y,
+			screen->cursor->x + screen->cursor->width,
+			screen->cursor->y + screen->cursor->height);
+}
+
+void
+twin_screen_set_cursor (twin_screen_t *screen, twin_pixmap_t *pixmap,
+			twin_fixed_t hotspot_x, twin_fixed_t hotspot_y)
+{
+    if (screen->cursor) {
+	twin_screen_damage_cursor(screen);
+	twin_pixmap_destroy(screen->cursor);
+    }
+    screen->cursor = pixmap;
+    screen->curs_hx = hotspot_x;
+    screen->curs_hy = hotspot_y;
+    pixmap->x = screen->curs_x - hotspot_x;
+    pixmap->y = screen->curs_y - hotspot_y;
+    if (pixmap)
+	twin_screen_damage_cursor(screen);
+}
+
+static void
+twin_screen_update_cursor(twin_screen_t *screen,
+			  twin_coord_t x, twin_coord_t y)
+{
+    if (screen->cursor)
+	twin_screen_damage_cursor(screen);
+
+    screen->curs_x = x;
+    screen->curs_y = y;
+
+    if (screen->cursor) {
+	screen->cursor->x = screen->curs_x - screen->curs_hx;
+	screen->cursor->y = screen->curs_y - screen->curs_hy;
+	twin_screen_damage_cursor(screen);
+    }
+}
+
 twin_bool_t
 twin_screen_dispatch (twin_screen_t *screen,
 		      twin_event_t  *event)
@@ -263,6 +333,8 @@ twin_screen_dispatch (twin_screen_t *screen,
     case TwinEventMotion:
     case TwinEventButtonDown:
     case TwinEventButtonUp:
+        twin_screen_update_cursor(screen, event->u.pointer.screen_x,
+				  event->u.pointer.screen_y);
 	pixmap = screen->pointer;
 	if (!pixmap)
 	{
