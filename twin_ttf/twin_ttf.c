@@ -24,31 +24,32 @@
 
 #include "twin_ttf.h"
 
-static double
-pos (FT_Pos x, outline_closure_t *c)
+static double pos (FT_Pos x, outline_closure_t *c)
 {
     FT_Face face = c->face;
 
     return (double) x / (double) face->units_per_EM;
 }
 
-static void
-command (char cmd, outline_closure_t *c)
+static void command (char cmd, outline_closure_t *c)
 {
     printf ("\t'%c', ", cmd);
     c->offset++;
 }
 
-static void
-cpos (FT_Pos x, outline_closure_t *c)
+static int conv (FT_Pos x, outline_closure_t *c)
 {
-    printf ("0x%02x, ", ((int) (floor (64.0 * pos (x, c) + 0.5))) & 0xff);
+	return floor(64.0 * pos (x, c) + 0.5);
+}
+
+static void cpos (FT_Pos x, outline_closure_t *c)
+{
+    printf ("%d, ", conv(x, c));
     c->offset++;
 }
 
-static unsigned char *
-ucs4_to_utf8 (FT_ULong	ucs4,
-	      unsigned char dest[8])
+static unsigned char * ucs4_to_utf8 (FT_ULong	ucs4,
+				     unsigned char dest[8])
 {
     int	bits;
     unsigned char *d = dest;
@@ -68,82 +69,98 @@ ucs4_to_utf8 (FT_ULong	ucs4,
     return dest;
 }
 
-static void
-glyph (FT_Pos advance, FT_ULong ucs4, outline_closure_t *c)
+static void glyph (FT_GlyphSlot glyph, FT_ULong ucs4, outline_closure_t *c)
 {
+    FT_Pos advance = glyph->linearHoriAdvance;
     unsigned char   utf8[8];
-    printf ("    /* 0x%lx (%s) */ ", ucs4, ucs4_to_utf8 (ucs4, utf8));
-    cpos (advance, c);
+
+    printf ("    /* 0x%lx (%s) */ \n", ucs4, ucs4_to_utf8 (ucs4, utf8));
+ 
+    /* I'm very unusre about the metrics here, mostly because I'm not 100%
+     * confident what twin expects in some of those fields
+     *
+     * twin wants: left, right, ascent, descent.
+     *
+     * For now, I'm setting "left" to horiBearingX though I'm not quite sure
+     * what this is used for, "right" to the full horizontal advance of
+     * the glyph as that's what twin uses as an advance between characters,
+     * "ascent" I set to horiBearingY (unsure there too though) and for the
+     * last, descent, I suppose I should use the total height minus the ascent
+     * though I'm not sure how to retreive the former (bbox ?).
+     *
+     * Note that currently, we only support horizontal text.
+     */
+    cpos (glyph->metrics.horiBearingX, c); /* left, not sure about that */
+    cpos (advance, c);			   /* right */
+    cpos (glyph->metrics.horiBearingY, c); /* ascent, not sure either */
+    cpos (0 /* XXX */, c);		   /* descent, not handled now */
     printf ("\n");
 }
 
-static int
-outline_moveto (FT_Vector *to, void *user)
+static int outline_moveto (const FT_Vector *to, void *user)
 {
     outline_closure_t	*c = user;
-    command ('m', c); cpos (to->x, c); cpos (to->y, c);
+    command ('m', c); cpos (to->x, c); cpos (-to->y, c);
     printf ("\n");
     return 0;
 }
 
-static int
-outline_lineto (FT_Vector *to, void *user)
+static int outline_lineto (const FT_Vector *to, void *user)
 {
     outline_closure_t	*c = user;
-    command ('l', c); cpos (to->x, c); cpos (to->y, c);
+    command ('l', c); cpos (to->x, c); cpos (-to->y, c);
     printf ("\n");
     return 0;
 }
 
-static int
-outline_conicto (FT_Vector *control, FT_Vector *to, void *user)
+static int outline_conicto (const FT_Vector *control, const FT_Vector *to,
+			    void *user)
 {
     outline_closure_t	*c = user;
     command ('2', c); 
-    cpos (control->x, c); cpos (control->y, c); 
-    cpos (to->x, c); cpos (to->y, c);
+    cpos (control->x, c); cpos (0-control->y, c); 
+    cpos (to->x, c); cpos (0-to->y, c);
     printf ("\n");
     return 0;
 }
 
-static int
-outline_cubicto (FT_Vector *control1, FT_Vector *control2,
-		 FT_Vector *to, void *user)
+static int outline_cubicto (const FT_Vector *control1,
+			    const FT_Vector *control2,
+			    const FT_Vector *to,
+			    void *user)
 {
     outline_closure_t	*c = user;
     command ('2', c); 
-    cpos (control1->x, c); cpos (control1->y, c); 
-    cpos (control2->x, c); cpos (control2->y, c); 
-    cpos (to->x, c); cpos (to->y, c);
+    cpos (control1->x, c); cpos (0-control1->y, c); 
+    cpos (control2->x, c); cpos (0-control2->y, c); 
+    cpos (to->x, c); cpos (0-to->y, c);
     printf ("\n");
     return 0;
 }
 
 static const FT_Outline_Funcs outline_funcs = {
-    outline_moveto,
-    outline_lineto,
-    outline_conicto,
-    outline_cubicto,
-    0, 0
+    .move_to	= outline_moveto,
+    .line_to	= outline_lineto,
+    .conic_to	= outline_conicto,
+    .cubic_to	= outline_cubicto,
+    .shift	= 0,
+    .delta	= 0
 };
 
 #define UCS_PAGE_SHIFT	7
 #define UCS_PER_PAGE    (1 << UCS_PAGE_SHIFT)
 
-static int
-ucs_page (FT_ULong ucs4)
+static int ucs_page (FT_ULong ucs4)
 {
     return ucs4 >> UCS_PAGE_SHIFT;
 }
 
-static FT_ULong
-ucs_first_in_page (FT_ULong ucs4)
+static FT_ULong ucs_first_in_page (FT_ULong ucs4)
 {
     return ucs4 & ~(UCS_PER_PAGE - 1);
 }
 
-static void
-sanitize (char *in, char *out, int first)
+static void sanitize (char *in, char *out, int first)
 {
     char    c;
 
@@ -166,8 +183,7 @@ sanitize (char *in, char *out, int first)
     *out++ = '\0';
 }
 
-static char *
-facename (FT_Face face)
+static char * facename (FT_Face face)
 {
     char    *family = face->family_name;
     char    *style = face->style_name;
@@ -181,8 +197,7 @@ facename (FT_Face face)
 
 #define MAX_UCS4    0x1000000
 
-static int
-convert_font (char *in_name, int id)
+static int convert_font (char *in_name, int id)
 {
     FT_Library	    ftLibrary;
     FT_Face	    face;
@@ -213,8 +228,8 @@ convert_font (char *in_name, int id)
     min_ucs4 = 0xffffff;
     max_ucs4 = 0;
     printf ("/* Derived from %s */\n\n", in_name);
-    printf ("#include \"twinint.h\"\n\n");
-    printf ("static const char outlines[] = {\n");
+    printf ("#include \"twin.h\"\n\n");
+    printf ("static const signed char outlines[] = {\n");
     for (ucs4 = FT_Get_First_Char (face, &gindex); 
 	 gindex != 0 && ucs4 < MAX_UCS4;
 	 ucs4 = FT_Get_Next_Char (face, ucs4, &gindex))
@@ -225,8 +240,9 @@ convert_font (char *in_name, int id)
 	    min_ucs4 = ucs4;
 	if (ucs4 > max_ucs4)
 	    max_ucs4 = ucs4;
-	offsets[gindex] = closure.offset + 1;
-	glyph (face->glyph->linearHoriAdvance, ucs4, &closure);
+	//offsets[gindex] = closure.offset + 1;
+	offsets[gindex] = closure.offset;
+	glyph (face->glyph, ucs4, &closure);
 	FT_Outline_Decompose (&face->glyph->outline, &outline_funcs, &closure);
 	command ('e', &closure); printf ("\n");
     }
@@ -255,21 +271,21 @@ convert_font (char *in_name, int id)
 	ncharmap++;
     }
     printf ("};\n\n");
-    printf ("const twin_font_t twin_%s = {\n", facename (face));
-    printf ("    charmap, %d,\n", ncharmap);
-    printf ("    outlines,\n");
-    printf ("    "); 
-    cpos (face->ascender, &closure);
-    cpos (face->descender, &closure); 
-    cpos (face->height, &closure);
-    printf ("\n");
-    printf ("    \"%s\", \"%s\",\n", face->family_name, face->style_name);
+    printf ("twin_font_t twin_%s = {\n", facename (face));
+    printf ("\t.type\t\t= TWIN_FONT_TYPE_TTF,\n");
+    printf ("\t.name\t\t= \"%s\",\n", face->family_name);
+    printf ("\t.style\t\t= \"%s\",\n", face->style_name);
+    printf ("\t.n_charmap\t= %d,\n", ncharmap);
+    printf ("\t.charmap\t= charmap,\n");
+    printf ("\t.outlines\t= outlines,\n");
+    printf ("\t.ascender\t= %d,\n", conv (face->ascender, &closure));
+    printf ("\t.descender\t= %d,\n", conv (face->descender, &closure));
+    printf ("\t.height\t\t= %d,\n", conv (face->height, &closure));
     printf ("};\n");
     return 1;
 }
 
-int
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
     convert_font (argv[1], 0);
     return 0;

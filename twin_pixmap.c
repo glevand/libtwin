@@ -66,6 +66,9 @@ twin_pixmap_create_const (twin_format_t	    format,
     pixmap->format = format;
     pixmap->width = width;
     pixmap->height = height;
+    pixmap->clip.left = pixmap->clip.top = 0;
+    pixmap->clip.right = pixmap->width;
+    pixmap->clip.bottom = pixmap->height;
     pixmap->stride = stride;
     pixmap->disable = 0;
     pixmap->p = pixels;

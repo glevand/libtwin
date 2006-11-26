@@ -1,5 +1,7 @@
 INCLUDES= @X_CFLAGS@ @WARN_CFLAGS@
 
+SUBDIRS=twin_ttf
+
 #libtwin_la_SOURCES = \
 #	twin.h \
 #	twin_draw.c \
@@ -21,12 +23,12 @@ base_SOURCES = \
 	twin_cursor.c \
 	twin_dispatch.c \
 	twin_draw.c \
-	twin_glyphs.c \
 	twin_hull.c \
 	twin_icon.c \
 	twin_file.c \
 	twin_fixed.c \
 	twin_font.c \
+	twin_font_default.c \
 	twin_geom.c \
 	twin_label.c \
 	twin_matrix.c \

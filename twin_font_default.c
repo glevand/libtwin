@@ -1,28 +1,31 @@
 /*
- * Twin - A Tiny Window System
- * Copyright © 2004 Keith Packard <keithp@keithp.com>
- * All rights reserved.
+ * $Id: twin_glyphs.c,v 1.7 2004-10-29 17:33:03 keithp Exp $
  *
- * This Library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * Copyright © 2004 Keith Packard
  *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
  *
- * You should have received a copy of the GNU Library General Public
- * License along with the Twin Library; see the file COPYING.  If not,
- * write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "twinint.h"
+#include "twin.h"
 
 
-const signed char _twin_gtable[] = {
+static const signed char outlines[] = {
 /* 0x0 '\0'  offset 0 */
     0, 24, 42, 0, 2, 4,
     0, 24, /* snap_x */
@@ -1029,21 +1032,34 @@ const signed char _twin_gtable[] = {
     'e',
 };
 
-const uint16_t _twin_g_offsets[] = {
-       0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,
-      28,   40,   90,  114,  152,  224,  323,  390,
-     419,  441,  463,  494,  520,  556,  575,  604,
-     622,  666,  691,  736,  780,  809,  860,  919,
-     944, 1004, 1063, 1109, 1162, 1183, 1209, 1230,
-    1288, 1375, 1406, 1455, 1499, 1534, 1572, 1604,
-    1655, 1686, 1703, 1731, 1761, 1785, 1821, 1851,
-    1895, 1931, 1981, 2023, 2074, 2100, 2128, 2152,
-    2188, 2212, 2240, 2271, 2296, 2314, 2339, 2363,
-    2381, 2417, 2467, 2517, 2561, 2611, 2659, 2693,
-    2758, 2790, 2826, 2870, 2900, 2917, 2963, 2995,
-    3039, 3089, 3139, 3168, 3219, 3252, 3283, 3307,
-    3343, 3367, 3399, 3430, 3474, 3491, 3535,    0,
+static const twin_charmap_t charmap[] = {
+    { 0x0000, {
+	    0,    0,    0,    0,    0,    0,    0,    0,
+	    0,    0,    0,    0,    0,    0,    0,    0,
+	    0,    0,    0,    0,    0,    0,    0,    0,
+	    0,    0,    0,    0,    0,    0,    0,    0,
+	    28,   40,   90,  114,  152,  224,  323,  390,
+	    419,  441,  463,  494,  520,  556,  575,  604,
+	    622,  666,  691,  736,  780,  809,  860,  919,
+	    944, 1004, 1063, 1109, 1162, 1183, 1209, 1230,
+	    1288, 1375, 1406, 1455, 1499, 1534, 1572, 1604,
+	    1655, 1686, 1703, 1731, 1761, 1785, 1821, 1851,
+	    1895, 1931, 1981, 2023, 2074, 2100, 2128, 2152,
+	    2188, 2212, 2240, 2271, 2296, 2314, 2339, 2363,
+	    2381, 2417, 2467, 2517, 2561, 2611, 2659, 2693,
+	    2758, 2790, 2826, 2870, 2900, 2917, 2963, 2995,
+	    3039, 3089, 3139, 3168, 3219, 3252, 3283, 3307,
+	    3343, 3367, 3399, 3430, 3474, 3491, 3535,    0,
+    }},
 };
+
+twin_font_t twin_Default_Font_Roman = {
+    .type       = TWIN_FONT_TYPE_STROKE,
+    .name	= "Default",
+    .style	= "Roman",
+    .n_charmap	= 1,
+    .charmap	= charmap,
+    .outlines	= outlines,
+};
+
+twin_font_t *g_twin_font = &twin_Default_Font_Roman;

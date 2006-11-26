@@ -50,8 +50,9 @@ typedef struct _twin_text_info {
     twin_fixed_t    snap_y[TWIN_GLYPH_MAX_SNAP_Y];
 } twin_text_info_t;
 
-static void
-_twin_text_compute_info (twin_path_t *path, twin_text_info_t *info)
+static void _twin_text_compute_info (twin_path_t	*path,
+				     twin_font_t	*font,
+				     twin_text_info_t	*info)
 {
     twin_spoint_t   origin = _twin_path_current_spoint (path);
     
@@ -64,20 +65,27 @@ _twin_text_compute_info (twin_path_t *path, twin_text_info_t *info)
 	 (path->state.matrix.m[0][0] == 0 &&
 	  path->state.matrix.m[1][1] == 0)))
     {
-	int	xi, yi;
+	int		xi, yi;
+	twin_fixed_t    margin_x;
 
 	if (path->state.matrix.m[0][0] != 0)
 	    xi = 0;
 	else
 	    xi = 1;
 	yi = 1-xi;
-	info->snap = TWIN_TRUE;
 	info->matrix.m[xi][0] = TWIN_FIXED_ONE;
 	info->matrix.m[xi][1] = 0;
 	info->matrix.m[yi][0] = 0;
 	info->matrix.m[yi][1] = TWIN_FIXED_ONE;
-	info->matrix.m[2][0] = SNAPI(twin_sfixed_to_fixed (origin.x));
-	info->matrix.m[2][1] = SNAPI(twin_sfixed_to_fixed (origin.y));
+	if (font->type == TWIN_FONT_TYPE_STROKE) {
+	    info->snap = TWIN_TRUE;
+	    info->matrix.m[2][0] = SNAPI(twin_sfixed_to_fixed (origin.x));
+	    info->matrix.m[2][1] = SNAPI(twin_sfixed_to_fixed (origin.y));
+	} else {
+	    info->snap = TWIN_FALSE;
+	    info->matrix.m[2][0] = twin_sfixed_to_fixed (origin.x);
+	    info->matrix.m[2][1] = twin_sfixed_to_fixed (origin.y);
+	}
 	info->scale.x = twin_fixed_mul (path->state.font_size, 
 					path->state.matrix.m[0][xi]);
 	info->reverse_scale.x = twin_fixed_div (TWIN_FIXED_ONE,
@@ -101,30 +109,41 @@ _twin_text_compute_info (twin_path_t *path, twin_text_info_t *info)
 	    info->matrix.m[1][yi] = -info->matrix.m[1][yi];
 	}
 
-	info->pen.x = SNAPH(info->scale.x / 24);
-	info->pen.y = SNAPH(info->scale.y / 24);
-	if (info->pen.x < TWIN_FIXED_HALF)
-	    info->pen.x = TWIN_FIXED_HALF;
-	if (info->pen.y < TWIN_FIXED_HALF)
-	    info->pen.y = TWIN_FIXED_HALF;
+	if (font->type == TWIN_FONT_TYPE_STROKE) {
+	    info->pen.x = SNAPH(info->scale.x / 24);
+	    info->pen.y = SNAPH(info->scale.y / 24);
+	    if (info->pen.x < TWIN_FIXED_HALF)
+		info->pen.x = TWIN_FIXED_HALF;
+	    if (info->pen.y < TWIN_FIXED_HALF)
+		info->pen.y = TWIN_FIXED_HALF;
+	} else {
+	    info->pen.x = 0;
+	    info->pen.y = 0;
+	}
 	info->margin.x = info->pen.x;
 	info->margin.y = info->pen.y;
-	if (path->state.font_style & TWIN_TEXT_BOLD)
+	if (font->type == TWIN_FONT_TYPE_STROKE &&
+	    (path->state.font_style & TWIN_TEXT_BOLD))
 	{
-	    twin_fixed_t    pen_x_add = SNAPH(info->pen.x >> 1);
-	    twin_fixed_t    pen_y_add = SNAPH(info->pen.y >> 1);
+	    twin_fixed_t    pen_x_add;
+	    twin_fixed_t    pen_y_add;
+
+	    pen_x_add = SNAPH(info->pen.x >> 1);
+	    pen_y_add = SNAPH(info->pen.y >> 1);
 
 	    if (pen_x_add < TWIN_FIXED_HALF)
-		pen_x_add = TWIN_FIXED_HALF;
+	        pen_x_add = TWIN_FIXED_HALF;
 	    if (pen_y_add < TWIN_FIXED_HALF)
 		pen_y_add = TWIN_FIXED_HALF;
+
 	    info->pen.x += pen_x_add;
 	    info->pen.y += pen_y_add;
 	}
 	DBGMSG (("pen: %9.4f %9.4f\n", F(info->pen.x), F(info->pen.y)));
 	
+	margin_x = info->snap ? SNAPI(info->margin.x) : info->margin.x;
 	twin_matrix_translate (&info->matrix,
-			       SNAPI(info->margin.x) + info->pen.x,
+			       margin_x + info->pen.x,
 			       -info->pen.y);
 	info->pen_matrix = info->matrix;
     }
@@ -137,11 +156,15 @@ _twin_text_compute_info (twin_path_t *path, twin_text_info_t *info)
 	info->scale.x = path->state.font_size;
 	info->scale.y = path->state.font_size;
 	
-	if (path->state.font_style & TWIN_TEXT_BOLD)
-	    info->pen.x = path->state.font_size / 16;
-	else
-	    info->pen.x = path->state.font_size / 24;
-	info->pen.y = info->pen.x;
+	if (font->type != TWIN_FONT_TYPE_STROKE)
+	    info->pen.x = info->pen.y = 0;
+	else {
+	    if (path->state.font_style & TWIN_TEXT_BOLD)
+		info->pen.x = path->state.font_size / 16;
+	    else
+		info->pen.x = path->state.font_size / 24;
+	    info->pen.y = info->pen.x;
+	}
 
 	info->margin.x = path->state.font_size / 24;
 	info->margin.y = info->margin.x;
@@ -167,9 +190,8 @@ _twin_text_compute_info (twin_path_t *path, twin_text_info_t *info)
     DBGMSG (("%9.4f %9.4f\n", F(info->matrix.m[2][0]), F(info->matrix.m[2][1])));
 }
 
-static void
-_twin_text_compute_snap (twin_text_info_t   *info,
-			 const signed char  *b)
+static void _twin_text_compute_snap (twin_text_info_t   *info,
+				     const signed char  *b)
 {
     int			s, n;
     const signed char	*snap;
@@ -187,8 +209,7 @@ _twin_text_compute_snap (twin_text_info_t   *info,
 	info->snap_y[s] = FY(snap[s], info);
 }
 
-static twin_path_t *
-_twin_text_compute_pen (twin_text_info_t *info)
+static twin_path_t * _twin_text_compute_pen (twin_text_info_t *info)
 {
     twin_path_t	*pen = twin_path_create ();
 
@@ -197,10 +218,9 @@ _twin_text_compute_pen (twin_text_info_t *info)
     return pen;
 }
 
-static twin_fixed_t
-_twin_snap (twin_fixed_t    v,
-	    twin_fixed_t    *snap,
-	    int		    n)
+static twin_fixed_t _twin_snap (twin_fixed_t    v,
+				twin_fixed_t    *snap,
+				int	        n)
 {
     int	s;
 
@@ -230,26 +250,43 @@ _twin_snap (twin_fixed_t    v,
     return v;
 }
 
-twin_bool_t
-twin_has_ucs4 (twin_ucs4_t ucs4)
+static twin_bool_t twin_find_ucs4_page(twin_font_t *font, uint32_t page)
 {
-    return ucs4 <= TWIN_FONT_MAX && _twin_g_offsets[ucs4] != 0;
+    int i;
+
+    if (font->cur_page && font->cur_page->page == page)
+	return TWIN_TRUE;
+
+    for (i = 0; i < font->n_charmap; i++)
+	if (font->charmap[i].page == page) {
+	    font->cur_page = &font->charmap[i];
+	    return TWIN_TRUE;
+	}
+
+    font->cur_page = &font->charmap[0];
+    return TWIN_FALSE;
+}
+
+twin_bool_t twin_has_ucs4 (twin_font_t *font, twin_ucs4_t ucs4)
+{
+    return twin_find_ucs4_page(font, twin_ucs_page(ucs4));
 }
 
 #define SNAPX(p)	_snap (path, p, snap_x, nsnap_x)
 #define SNAPY(p)	_snap (path, p, snap_y, nsnap_y)
 
-static const signed char *
-_twin_g_base (twin_ucs4_t ucs4)
+static const signed char * _twin_g_base (twin_font_t *font, twin_ucs4_t ucs4)
 {
-    if (ucs4 > TWIN_FONT_MAX) ucs4 = 0;
+    int		idx = twin_ucs_char_in_page(ucs4);
 
-    return _twin_gtable + _twin_g_offsets[ucs4];
+    if (!twin_find_ucs4_page(font, twin_ucs_page(ucs4)))
+	idx = 0;
+
+    return font->outlines + font->cur_page->offsets[idx];
 }
 
-static twin_fixed_t
-_twin_glyph_width (twin_text_info_t	*info,
-		   const signed char	*b)
+static twin_fixed_t _twin_glyph_width (twin_text_info_t	 *info,
+				       const signed char *b)
 {
     twin_fixed_t    right = FX(twin_glyph_right(b), info) + info->pen.x * 2;
     twin_fixed_t    right_side_bearing;
@@ -263,12 +300,12 @@ _twin_glyph_width (twin_text_info_t	*info,
     return width;
 }
 
-void
-twin_text_metrics_ucs4 (twin_path_t	    *path, 
-			twin_ucs4_t	    ucs4, 
-			twin_text_metrics_t *m)
+void twin_text_metrics_ucs4 (twin_path_t	    *path, 
+			     twin_ucs4_t	    ucs4, 
+			     twin_text_metrics_t    *m)
 {
-    const signed char	*b = _twin_g_base (ucs4);
+    twin_font_t		*font = g_twin_font;
+    const signed char	*b = _twin_g_base (font, ucs4);
     twin_text_info_t	info;
     twin_fixed_t	left, right, ascent, descent;
     twin_fixed_t	font_spacing;
@@ -276,7 +313,7 @@ twin_text_metrics_ucs4 (twin_path_t	    *path,
     twin_fixed_t	font_ascent;
     twin_fixed_t	margin_x, margin_y;
 
-    _twin_text_compute_info (path, &info);
+    _twin_text_compute_info (path, font, &info);
     if (info.snap)
 	_twin_text_compute_snap (&info, b);
 
@@ -317,19 +354,28 @@ twin_text_metrics_ucs4 (twin_path_t	    *path,
     m->font_descent = font_descent + margin_y;
 }
 
-void
-twin_path_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
+static const signed char *twin_glyph_draw(twin_font_t	    *font,
+					  const signed char *b)
 {
-    const signed char	*b = _twin_g_base (ucs4);
-    const signed char	*g = twin_glyph_draw(b);
+	if (font->type == TWIN_FONT_TYPE_STROKE)
+	    return twin_glyph_snap_y(b) + twin_glyph_n_snap_y(b);
+	return b + 4;
+}
+
+void twin_path_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
+{
+    twin_font_t		*font = g_twin_font;
+    const signed char	*b = _twin_g_base (font, ucs4);
+    const signed char	*g = twin_glyph_draw(font, b);
     twin_spoint_t	origin;
-    twin_fixed_t	x1, y1, x2, y2, x3, y3;
+    twin_fixed_t	x1, y1, x2, y2, x3, y3, _x1, _y1;
     twin_path_t		*stroke;
-    twin_path_t		*pen;
+    twin_path_t		*pen = NULL;
     twin_fixed_t	width;
     twin_text_info_t	info;
-    
-    _twin_text_compute_info (path, &info);
+    signed char		op;
+
+    _twin_text_compute_info (path, font, &info);
     if (info.snap)
 	_twin_text_compute_snap (&info, b);
 
@@ -337,10 +383,13 @@ twin_path_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
     
     stroke = twin_path_create ();
     twin_path_set_matrix (stroke, info.matrix);
-    pen = _twin_text_compute_pen (&info);
-    
+
+    if (font->type == TWIN_FONT_TYPE_STROKE)
+	pen = _twin_text_compute_pen (&info);
+
+    x1 = y1 = 0;
     for (;;) {
-	switch (*g++) {
+	switch ((op = *g++)) {
 	case 'm':
 	    x1 = FX(*g++, &info);
 	    y1 = FY(*g++, &info);
@@ -368,31 +417,47 @@ twin_path_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
 	    twin_path_draw (stroke, x1, y1);
 	    continue;
 	case 'c':
-	    x1 = FX(*g++, &info);
-	    y1 = FY(*g++, &info);
-	    x2 = FX(*g++, &info);
-	    y2 = FY(*g++, &info);
 	    x3 = FX(*g++, &info);
 	    y3 = FY(*g++, &info);
+	    x2 = FX(*g++, &info);
+	    y2 = FY(*g++, &info);
+	    x1 = FX(*g++, &info);
+	    y1 = FY(*g++, &info);
 	    if (info.snap)
 	    {
-		x1 = _twin_snap (x1, info.snap_x, info.n_snap_x);
-		y1 = _twin_snap (y1, info.snap_y, info.n_snap_y);
-		x2 = _twin_snap (x2, info.snap_x, info.n_snap_x);
-		y2 = _twin_snap (y2, info.snap_y, info.n_snap_y);
 		x3 = _twin_snap (x3, info.snap_x, info.n_snap_x);
 		y3 = _twin_snap (y3, info.snap_y, info.n_snap_y);
+		x2 = _twin_snap (x2, info.snap_x, info.n_snap_x);
+		y2 = _twin_snap (y2, info.snap_y, info.n_snap_y);
+		x1 = _twin_snap (x1, info.snap_x, info.n_snap_x);
+		y1 = _twin_snap (y1, info.snap_y, info.n_snap_y);
 	    }
-	    twin_path_curve (stroke, x1, y1, x2, y2, x3, y3);
+	    twin_path_curve (stroke, x3, y3, x2, y2, x1, y1);
+	    continue;
+	case '2':
+	    _x1 = FX(*g++, &info);
+	    _y1 = FY(*g++, &info);
+	    x3 = x1 + 2 * (_x1 - x1) / 3;
+	    y3 = y1 + 2 * (_y1 - y1) / 3;
+	    x1 = FX(*g++, &info);
+	    y1 = FY(*g++, &info);
+	    x2 = x1 + 2 * (_x1 - x1) / 3;
+	    y2 = y1 + 2 * (_y1 - y1) / 3;
+	    twin_path_curve (stroke, x3, y3, x2, y2, x1, y1);
 	    continue;
 	case 'e':
 	    break;
+	default:
+	    DBGMSG (("unknown font op 0x%02x '%c'\n", op, op));
 	}
 	break;
     }
 
-    twin_path_convolve (path, stroke, pen);
-    twin_path_destroy (pen);
+    if (font->type == TWIN_FONT_TYPE_STROKE) {
+	twin_path_convolve (path, stroke, pen);
+	twin_path_destroy (pen);
+    } else
+	twin_path_append(path, stroke);
     twin_path_destroy (stroke);
     
     width = _twin_glyph_width (&info, b);
@@ -402,8 +467,7 @@ twin_path_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
 		      origin.y + _twin_matrix_dy (&info.matrix, width, 0));
 }
 
-twin_fixed_t
-twin_width_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
+twin_fixed_t twin_width_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
 {
     twin_text_metrics_t	metrics;
     
@@ -411,9 +475,8 @@ twin_width_ucs4 (twin_path_t *path, twin_ucs4_t ucs4)
     return metrics.width;
 }
 
-static int
-_twin_utf8_to_ucs4 (const char	    *src_orig,
-		    twin_ucs4_t	    *dst)
+static int _twin_utf8_to_ucs4 (const char	    *src_orig,
+			       twin_ucs4_t	    *dst)
 {
     const char	    *src = src_orig;
     char	    s;
@@ -479,8 +542,7 @@ _twin_utf8_to_ucs4 (const char	    *src_orig,
     return src - src_orig;
 }
 
-void
-twin_path_utf8 (twin_path_t *path, const char *string)
+void twin_path_utf8 (twin_path_t *path, const char *string)
 {
     int		len;
     twin_ucs4_t	ucs4;
@@ -492,8 +554,7 @@ twin_path_utf8 (twin_path_t *path, const char *string)
     }
 }
 
-twin_fixed_t
-twin_width_utf8 (twin_path_t *path, const char *string)
+twin_fixed_t twin_width_utf8 (twin_path_t *path, const char *string)
 {
     int		    len;
     twin_ucs4_t	    ucs4;
@@ -507,10 +568,9 @@ twin_width_utf8 (twin_path_t *path, const char *string)
     return w;
 }
 
-void
-twin_text_metrics_utf8 (twin_path_t	    *path, 
-			const char	    *string,
-			twin_text_metrics_t *m)
+void twin_text_metrics_utf8 (twin_path_t	 *path, 
+			     const char	    	 *string,
+			     twin_text_metrics_t *m)
 {
     int			len;
     twin_ucs4_t		ucs4;

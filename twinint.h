@@ -349,16 +349,6 @@ _twin_path_sfinish (twin_path_t *path);
  * Glyph stuff.  Coordinates are stored in 2.6 fixed point format
  */
 
-#define TWIN_FONT_MAX	0x7f
-
-extern const twin_gpoint_t	_twin_glyphs[];
-extern const uint16_t		_twin_glyph_offsets[];
-
-#define TWIN_GLYPH_MAX_POINTS	56
-
-extern const signed char _twin_gtable[];
-extern const uint16_t _twin_g_offsets[];
-
 /*
  * Check these whenever glyphs are changed
  */
@@ -373,7 +363,6 @@ extern const uint16_t _twin_g_offsets[];
 #define twin_glyph_n_snap_y(g)	((g)[5])
 #define twin_glyph_snap_x(g)	(&g[6])
 #define twin_glyph_snap_y(g)	(twin_glyph_snap_x(g) + twin_glyph_n_snap_x(g))
-#define twin_glyph_draw(g)	(twin_glyph_snap_y(g) + twin_glyph_n_snap_y(g))
 
 /*
  * dispatch stuff

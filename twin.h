@@ -263,6 +263,54 @@ typedef struct _twin_text_metrics {
     twin_fixed_t    font_descent;
 } twin_text_metrics_t;
 
+
+/*
+ * Fonts
+ */
+#define UCS_PAGE_SHIFT  7
+#define UCS_PER_PAGE    (1 << UCS_PAGE_SHIFT)
+
+static inline int twin_ucs_page (uint32_t ucs4)
+{
+    return ucs4 >> UCS_PAGE_SHIFT;
+}
+
+static inline int twin_ucs_char_in_page (uint32_t ucs4)
+{
+    return ucs4 & (UCS_PER_PAGE - 1);
+}
+
+typedef struct _twin_charmap {
+    unsigned int	page;
+    unsigned int	offsets[UCS_PER_PAGE];
+} twin_charmap_t;
+
+#define TWIN_FONT_TYPE_STROKE	1
+#define TWIN_FONT_TYPE_TTF	2
+
+typedef struct _twin_font {
+    /* those fields have to be initialized */
+    int				type;
+    const char			*name;
+    const char			*style;
+    const twin_charmap_t	*charmap;
+    int				n_charmap;
+    const signed char		*outlines;
+    signed char			ascender;
+    signed char			descender;
+    signed char			height;	
+
+    /* those are used at runtime for caching */
+    const twin_charmap_t	*cur_page;
+
+} twin_font_t;
+
+/* XXX one global font for now, to fix */
+extern twin_font_t	*g_twin_font;
+
+/* Built-in default stroke font */
+extern twin_font_t	twin_Default_Font_Roman;
+
 /*
  * Events
  */
@@ -608,8 +656,7 @@ twin_fixed_div (twin_fixed_t a, twin_fixed_t b);
  * twin_font.c
  */
 
-twin_bool_t
-twin_has_ucs4 (twin_ucs4_t ucs4);
+twin_bool_t twin_has_ucs4 (twin_font_t* font, twin_ucs4_t ucs4);
     
 #define TWIN_TEXT_ROMAN	    0
 #define TWIN_TEXT_BOLD	    1
