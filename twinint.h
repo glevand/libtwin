@@ -36,6 +36,7 @@ typedef int32_t	    twin_dfixed_t;  /* 24.8 format (12.4 * 12.4) */
 #define twin_sfixed_floor(f)	    ((f) & ~0xf)
 #define twin_sfixed_trunc(f)	    ((f) >> 4)
 #define twin_sfixed_ceil(f)	    (((f) + 0xf) & ~0xf)
+#define twin_sfixed_mod(f)	    ((f) & 0xf)
 
 #define twin_int_to_sfixed(i)	    ((twin_sfixed_t) ((i) * 16))
 
@@ -107,6 +108,15 @@ typedef void (*twin_src_msk_op) (twin_pointer_t dst,
 typedef void (*twin_src_op) (twin_pointer_t dst,
 			     twin_source_u  src,
 			     int	    width);
+
+typedef struct _twin_xform {
+    twin_pixmap_t	*pixmap;
+    twin_pointer_t	span;
+    twin_coord_t	left;
+    twin_coord_t	width;
+    twin_coord_t	src_x;
+    twin_coord_t	src_y;
+} twin_xform_t;
 
 /* twin_primitive.c */
 
@@ -301,6 +311,12 @@ _twin_matrix_x (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y);
 
 twin_sfixed_t
 _twin_matrix_y (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y);
+
+twin_fixed_t
+_twin_matrix_fx (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y);
+
+twin_fixed_t
+_twin_matrix_fy (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y);
 
 twin_sfixed_t
 _twin_matrix_dx (twin_matrix_t *m, twin_fixed_t dx, twin_fixed_t dy);

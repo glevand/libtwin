@@ -39,6 +39,7 @@ typedef int16_t	    twin_keysym_t;
 typedef int32_t	    twin_area_t;
 typedef int32_t	    twin_time_t;
 typedef int16_t	    twin_stretch_t;
+typedef int32_t	    twin_fixed_t;   /* 16.16 format */
 
 #define TWIN_FALSE  0
 #define TWIN_TRUE   1
@@ -70,6 +71,13 @@ typedef int16_t	    twin_angle_t;   /* -2048 .. 2048 for -180 .. 180 */
 typedef struct _twin_rect {
     twin_coord_t    left, right, top, bottom;
 } twin_rect_t;
+
+/*
+ * Place matrices in structures so they can be easily copied
+ */
+typedef struct _twin_matrix {
+    twin_fixed_t	m[3][2];
+} twin_matrix_t;
 
 typedef union _twin_pointer {
     void	    *v;
@@ -105,6 +113,8 @@ typedef struct _twin_pixmap {
     twin_coord_t		width;	    /* pixels */
     twin_coord_t		height;	    /* pixels */
     twin_coord_t		stride;	    /* bytes */
+    twin_matrix_t		transform;
+
     /*
      * Clipping - a single rectangle in pixmap coordinates.
      * Drawing is done relative to this rectangle
@@ -204,8 +214,6 @@ typedef struct _twin_operand {
 
 typedef enum { TWIN_OVER, TWIN_SOURCE } twin_operator_t;
 
-typedef int32_t	    twin_fixed_t;   /* 16.16 format */
-
 #define TWIN_FIXED_ONE	(0x10000)
 #define TWIN_FIXED_HALF	(0x08000)
 #define TWIN_FIXED_MAX	(0x7fffffff)
@@ -226,13 +234,6 @@ typedef int32_t	    twin_fixed_t;   /* 16.16 format */
 typedef struct _twin_point {
     twin_fixed_t    x, y;
 } twin_point_t;
-
-/*
- * Place matrices in structures so they can be easily copied
- */
-typedef struct _twin_matrix {
-    twin_fixed_t	m[3][2];
-} twin_matrix_t;
 
 typedef struct _twin_path twin_path_t;
 
@@ -725,6 +726,9 @@ twin_label_set (twin_label_t	*label,
 
 void
 twin_matrix_identity (twin_matrix_t *m);
+
+twin_bool_t
+twin_matrix_is_identity (twin_matrix_t *m);
 
 void
 twin_matrix_translate (twin_matrix_t *m, twin_fixed_t tx, twin_fixed_t ty);

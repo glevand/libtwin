@@ -39,6 +39,7 @@ twin_pixmap_create (twin_format_t   format,
     pixmap->format = format;
     pixmap->width = width;
     pixmap->height = height;
+    twin_matrix_identity(&pixmap->transform);
     pixmap->clip.left = pixmap->clip.top = 0;
     pixmap->clip.right = pixmap->width;
     pixmap->clip.bottom = pixmap->height;
@@ -66,6 +67,7 @@ twin_pixmap_create_const (twin_format_t	    format,
     pixmap->format = format;
     pixmap->width = width;
     pixmap->height = height;
+    twin_matrix_identity(&pixmap->transform);
     pixmap->clip.left = pixmap->clip.top = 0;
     pixmap->clip.right = pixmap->width;
     pixmap->clip.bottom = pixmap->height;
@@ -242,6 +244,7 @@ static twin_argb32_t
 _twin_pixmap_fetch (twin_pixmap_t *pixmap, twin_coord_t x, twin_coord_t y)
 {
     twin_pointer_t  p = twin_pixmap_pointer (pixmap, x - pixmap->x, y - pixmap->y);
+    // XXX FIX FOR TRANSFORM
 
     if (pixmap->x <= x && x < pixmap->x + pixmap->width &&
 	pixmap->y <= y && y < pixmap->y + pixmap->height)

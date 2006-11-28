@@ -80,6 +80,14 @@ twin_matrix_identity (twin_matrix_t *m)
     m->m[2][0] = 0;		    m->m[2][1] = 0;
 }
 
+twin_bool_t
+twin_matrix_is_identity (twin_matrix_t *m)
+{
+	return  m->m[0][0] == TWIN_FIXED_ONE && m->m[0][1] == 0 &&
+		m->m[1][0] == 0		     && m->m[1][1] == TWIN_FIXED_ONE &&
+		m->m[2][0] == 0		     && m->m[2][1] == 0;
+}
+
 void
 twin_matrix_translate (twin_matrix_t *m, twin_fixed_t tx, twin_fixed_t ty)
 {
@@ -168,6 +176,22 @@ _twin_matrix_y (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y)
 	     twin_fixed_to_double(x), twin_fixed_to_double(y),
 	     twin_sfixed_to_double (s)));
     return s;
+}
+
+twin_fixed_t
+_twin_matrix_fx (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y)
+{
+    return twin_fixed_mul (m->m[0][0], x) +
+	    twin_fixed_mul (m->m[1][0], y) +
+	    m->m[2][0];
+}
+
+twin_fixed_t
+_twin_matrix_fy (twin_matrix_t *m, twin_fixed_t x, twin_fixed_t y)
+{
+	return twin_fixed_mul (m->m[0][1], x) +
+		twin_fixed_mul (m->m[1][1], y) +
+		m->m[2][1];
 }
 
 twin_sfixed_t
