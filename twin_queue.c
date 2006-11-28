@@ -53,6 +53,22 @@ _twin_queue_remove (twin_queue_t	**head,
 }
 
 void
+_twin_queue_reorder (twin_queue_t	**head,
+                     twin_queue_proc_t   proc,
+		     twin_queue_t	*elem)
+{
+    twin_queue_t **prev, *q;
+
+    _twin_queue_remove(head, elem);
+
+    for (prev = head; (q = *prev); prev = &q->next)
+        if ((*proc) (elem, q) == TWIN_AFTER)
+            break;
+    elem->next = *prev;
+    *prev = elem;
+}
+
+void
 _twin_queue_delete (twin_queue_t	**head,
 		    twin_queue_t	*old)
 {

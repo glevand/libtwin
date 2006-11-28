@@ -416,6 +416,11 @@ _twin_queue_remove (twin_queue_t	**head,
 		    twin_queue_t	*old);
 
 void
+_twin_queue_reorder (twin_queue_t       **head,
+                     twin_queue_proc_t   proc,
+                     twin_queue_t       *elem);
+
+void
 _twin_queue_delete (twin_queue_t	**head,
 		    twin_queue_t	*old);
 

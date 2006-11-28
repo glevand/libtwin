@@ -63,9 +63,9 @@ _twin_run_timeout (void)
 	delay = (*timeout->proc) (now, timeout->closure);
 	if (delay >= 0)
 	{
-	    _twin_queue_remove ((twin_queue_t **) &head, 
-				   &timeout->queue);
-	    _twin_queue_timeout (timeout, twin_now () + delay);
+	    timeout->time = twin_now() + delay;
+	    _twin_queue_reorder ((twin_queue_t **) &head,
+				 _twin_timeout_order, &timeout->queue);
 	}
 	else
 	    _twin_queue_delete ((twin_queue_t **) &head, 
