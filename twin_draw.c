@@ -399,14 +399,14 @@ static void twin_pixmap_free_xform (twin_xform_t *xform)
 #define _get_pix_16(d, pix, x, y) \
     do { \
 	twin_rgb16_t p = _pix_clipped(pix, x, y) ? 0 : \
-	    *((pix)->p.argb32 + XF(y) * ((pix)->stride / 4) + XF(x)); \
+	    *((pix)->p.argb32 + XF(y) * ((pix)->stride >> 1) + XF(x)); \
 	*((twin_argb32_t *)(char *)(d)) = twin_rgb16_to_argb32(p); \
     } while(0)
 
 #define _get_pix_32(d, pix, x, y) \
     do { \
 	twin_argb32_t p = _pix_clipped(pix, x, y) ? 0 : \
-	    *((pix)->p.argb32 + XF(y) * ((pix)->stride / 4) + XF(x)); \
+	    *((pix)->p.argb32 + XF(y) * ((pix)->stride >> 2) + XF(x)); \
 	*((twin_argb32_t *)(char *)(d)) = p; \
     } while(0)
 
