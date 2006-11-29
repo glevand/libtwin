@@ -1,7 +1,12 @@
 AM_CFLAGS=-g
 INCLUDES= @WARN_CFLAGS@ @FREETYPE_CFLAGS@
 
-bin_PROGRAMS = twin_ttf
+EXTRA_PROGRAMS = twin_ttf
+bin_PROGRAMS = 
+
+if TWIN_TTF
+bin_PROGRAMS += twin_ttf
+endif
 
 twin_ttf_SOURCES = \
 	twin_ttf.h \

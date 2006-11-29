@@ -1,21 +1,28 @@
-INCLUDES= @X_CFLAGS@ @WARN_CFLAGS@
+AM_CFLAGS = @WARN_CFLAGS@
+AM_LDFLAGS = -version-info @LIB_VERSION@
 
 SUBDIRS=twin_ttf
 
-#libtwin_la_SOURCES = \
-#	twin.h \
-#	twin_draw.c \
-#	twin_pixmap.c \
-#	twin_primitive.c \
-#	twin_screen.c \
-#	twin_x11.c \
-#	twinint.h
-#
-#lib_LTLIBRARIES = libtwin.la
+EXTRA_PROGRAMS = xtwin ftwin
 
-bin_PROGRAMS = xtwin ftwin
+bin_PROGRAMS =
+lib_LTLIBRARIES = libtwin.la
 
-base_SOURCES = \
+if TWIN_X11
+bin_PROGRAMS += xtwin
+lib_LTLIBRARIES += libtwin-x11.la
+endif
+
+if TWIN_FB
+bin_PROGRAMS += ftwin
+lib_LTLIBRARIES += libtwin-fbdev.la
+endif
+
+if TWIN_MOUSE
+lib_LTLIBRARIES += libtwin-mouse.la
+endif
+
+libtwin_la_SOURCES = \
 	twin.h \
 	twin_box.c \
 	twin_button.c \
@@ -46,7 +53,20 @@ base_SOURCES = \
 	twin_widget.c \
 	twin_window.c \
 	twin_work.c \
-	twinint.h \
+	twinint.h
+
+libtwin_mouse_la_LDFLAGS = -version-info=@PACKAGE_VERSION@
+libtwin_mouse_la_SOURCES = twin_linux_mouse.c \
+	twin_linux_mouse.h
+
+demo_sources = twin_demo.c \
+	twin_demo.h \
+	twin_hello.c \
+	twin_hello.h \
+	twin_demoline.c \
+	twin_demoline.h \
+	twin_demospline.c \
+	twin_demospline.h \
 	twin_clock.c \
 	twin_clock.h \
 	twin_calc.c \
@@ -54,34 +74,14 @@ base_SOURCES = \
 	twin_text.c \
 	twin_text.h
 
-xtwin_SOURCES = $(base_SOURCES) \
-	twin_x11.c \
-	twin_x11.h \
-	twin_demo.c \
-	twin_demo.h \
-	twin_hello.c \
-	twin_hello.h \
-	twin_demoline.c \
-	twin_demoline.h \
-	twin_demospline.c \
-	twin_demospline.h \
-	xtwin.c
+libtwin_x11_la_SOURCES = twin_x11.c twin_x11.h
+libtwin_x11_la_CPPFLAGS = @X_CFLAGS@
 
-ftwin_SOURCES = $(base_SOURCES) \
-	twin_fbdev.c \
-	twin_fbdev.h \
-	twin_linux_mouse.c \
-	twin_linux_mouse.h \
-	twin_demo.c \
-	twin_demo.h \
-	twin_hello.c \
-	twin_hello.h \
-	twin_demoline.c \
-	twin_demoline.h \
-	twin_demospline.c \
-	twin_demospline.h \
-	ftwin.c
+xtwin_SOURCES =	xtwin.c $(demo_sources)
+xtwin_CPPFLAGS = @X_CFLAGS@
+xtwin_LDADD = libtwin.la libtwin-x11.la @X_LIBS@ -lm
 
-xtwin_LDADD = @X_LIBS@ -lm
+libtwin_fbdev_la_SOURCES = twin_fbdev.c twin_fbdev.h
 
-ftwin_LDADD = -lm
+ftwin_SOURCES = ftwin.c $(demo_sources)
+ftwin_LDADD = libtwin.la libtwin-fbdev.la libtwin-mouse.la -lm
