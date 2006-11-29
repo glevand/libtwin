@@ -80,4 +80,5 @@ AC_MSG_NOTICE([linux mouse:    $twin_mouse])
 
 AC_OUTPUT([Makefile
            twin.pc
-	   twin_ttf/Makefile])
+	   twin_ttf/Makefile
+	   twin_demos/Makefile])
