@@ -323,44 +323,80 @@ twin_screen_update_cursor(twin_screen_t *screen,
     }
 }
 
-twin_bool_t
-twin_screen_dispatch (twin_screen_t *screen,
-		      twin_event_t  *event)
+static void _twin_adj_mouse_evt(twin_event_t *event, twin_pixmap_t *pixmap)
 {
-    twin_pixmap_t   *pixmap;
+    event->u.pointer.x = event->u.pointer.screen_x - pixmap->x;
+    event->u.pointer.y = event->u.pointer.screen_y - pixmap->y;
+}
+
+twin_bool_t twin_screen_dispatch (twin_screen_t *screen,
+				  twin_event_t  *event)
+{
+    twin_pixmap_t   *pixmap, *ntarget;
     
     switch (event->kind) {
     case TwinEventMotion:
     case TwinEventButtonDown:
     case TwinEventButtonUp:
+	/* update mouse cursor */
         twin_screen_update_cursor(screen, event->u.pointer.screen_x,
 				  event->u.pointer.screen_y);
-	pixmap = screen->pointer;
-	if (!pixmap)
-	{
-	    for (pixmap = screen->top; pixmap; pixmap = pixmap->down)
-		if (!twin_pixmap_transparent (pixmap,
-					      event->u.pointer.screen_x,
-					      event->u.pointer.screen_y))
-		{
-		    break;
-		}
-	    if (event->kind == TwinEventButtonDown)
-		screen->pointer = pixmap;
-	}
+
+	/* if target is tracking the mouse, check for mouse up, if not,
+	 * just pass the event along
+	 */
+	pixmap = screen->target;
+	if (screen->clicklock && event->kind != TwinEventButtonUp)
+	    goto mouse_passup;
+
+	/* if event is mouse up, stop tracking if any */
 	if (event->kind == TwinEventButtonUp)
-	    screen->pointer = NULL;
-	if (pixmap)
-	{
-	    event->u.pointer.x = event->u.pointer.screen_x - pixmap->x;
-	    event->u.pointer.y = event->u.pointer.screen_y - pixmap->y;
+	    screen->clicklock = 0;
+
+	/* check who the mouse is over now */
+	for (ntarget = screen->top; ntarget; ntarget = ntarget->down)
+	    if (!twin_pixmap_transparent (ntarget,
+					  event->u.pointer.screen_x,
+					  event->u.pointer.screen_y))
+		break;
+
+	/* ah, somebody new ... send leave/enter events and set new target */
+	if (pixmap != ntarget) {
+	    twin_event_t evt;
+
+	    if (pixmap) {
+		evt = *event;
+		evt.kind = TwinEventLeave;
+		_twin_adj_mouse_evt (&evt, pixmap);
+		twin_pixmap_dispatch (pixmap, &evt);
+	    }
+
+	    pixmap = screen->target = ntarget;
+
+	    if (pixmap) {
+		evt = *event;
+		_twin_adj_mouse_evt (&evt, pixmap);
+		evt.kind = TwinEventEnter;
+		twin_pixmap_dispatch (pixmap, &evt);
+	    }
 	}
+
+	/* check for new click locking */
+	if (pixmap && event->kind == TwinEventButtonDown)
+	    screen->clicklock = 1;
+
+ mouse_passup:
+	/* adjust event to pixmap coordinates before passing up */
+	if (pixmap)
+	    _twin_adj_mouse_evt (event, pixmap);
 	break;
+
     case TwinEventKeyDown:
     case TwinEventKeyUp:
     case TwinEventUcs4:
 	pixmap = screen->active;
 	break;
+
     default:
 	pixmap = NULL;
 	break;

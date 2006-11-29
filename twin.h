@@ -159,9 +159,10 @@ typedef struct _twin_screen {
      */
     twin_pixmap_t	*active;
     /*
-     * pointer down for this window
+     * this pixmap is target of mouse events
      */
-    twin_pixmap_t	*pointer;
+    twin_pixmap_t	*target;
+    twin_bool_t		clicklock;
     /*
      * mouse image (optional)
      */
@@ -317,14 +318,27 @@ extern twin_font_t	twin_Default_Font_Roman;
  */
 
 typedef enum _twin_event_kind {
-    TwinEventButtonDown, TwinEventButtonUp, TwinEventMotion,
-    TwinEventKeyDown, TwinEventKeyUp, TwinEventUcs4,
-    TwinEventActivate, TwinEventDeactivate,
-    TwinEventPaint,
-    TwinEventShow,
-    TwinEventQueryGeometry,
-    TwinEventConfigure,
-    TwinEventDestroy,
+    /* Mouse */
+    TwinEventButtonDown		= 0x0001,
+    TwinEventButtonUp		= 0x0002,
+    TwinEventMotion		= 0x0003,
+    TwinEventEnter		= 0x0004,
+    TwinEventLeave		= 0x0005,
+
+    /* keyboard */
+    TwinEventKeyDown		= 0x0101,
+    TwinEventKeyUp		= 0x0102,
+    TwinEventUcs4		= 0x0103,
+
+    /* Focus */
+    TwinEventActivate		= 0x0201,
+    TwinEventDeactivate		= 0x0202,
+
+    /* Widgets */
+    TwinEventPaint		= 0x1001,
+    TwinEventQueryGeometry	= 0x1002,
+    TwinEventConfigure		= 0x1003,
+    TwinEventDestroy		= 0x1004,
 } twin_event_kind_t;
 
 typedef struct _twin_event {
