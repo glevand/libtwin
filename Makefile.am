@@ -1,8 +1,6 @@
 AM_CFLAGS = @WARN_CFLAGS@
 
-SUBDIRS=twin_ttf twin_demos
-
-EXTRA_PROGRAMS = xtwin ftwin
+EXTRA_PROGRAMS = xtwin ftwin twin_ttf
 
 bin_PROGRAMS =
 lib_LTLIBRARIES = libtwin.la
@@ -77,3 +75,29 @@ ftwin_SOURCES = ftwin.c
 ftwin_CPPFLAGS = -I$(top_srcdir)/twin_demos
 ftwin_LDADD = twin_demos/libtwin_demos.a \
 	libtwin.la libtwin-fbdev.la libtwin-mouse.la -lm
+
+# demo twin applications
+noinst_LIBRARIES = twin_demos/libtwin_demos.a
+
+twin_demos_libtwin_demos_a_CFLAGS = @WARN_CFLAGS@ -I$(top_srcdir)/twin_demos
+twin_demos_libtwin_demos_a_SOURCES = \
+	twin_demos/twin_calc.c twin_demos/twin_calc.h \
+	twin_demos/twin_clock.c twin_demos/twin_clock.h \
+	twin_demos/twin_demo.c twin_demos/twin_demo.h \
+	twin_demos/twin_demoline.c twin_demos/twin_demoline.h \
+	twin_demos/twin_demospline.c twin_demos/twin_demospline.h \
+	twin_demos/twin_hello.c twin_demos/twin_hello.h \
+	twin_demos/twin_text.c twin_demos/twin_text.h
+
+# twin_ttf
+if TWIN_TTF
+bin_PROGRAMS += twin_ttf/twin_ttf
+endif
+
+twin_ttf_twin_ttf_SOURCES = \
+	twin_ttf/twin_ttf.h \
+	twin_ttf/twin_ttf.c
+
+twin_ttf_twin_ttf_LDADD = @FREETYPE_LIBS@ -lm
+twin_ttf_twin_ttf_CFLAGS = -g @WARN_CFLAGS@
+twin_ttf_twin_ttf_CPPFLAGS = @FREETYPE_CFLAGS@ -I$(top_srcdir)/twin_ttf
