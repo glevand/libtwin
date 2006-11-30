@@ -1,19 +1,17 @@
 AM_CFLAGS = @WARN_CFLAGS@
 
-EXTRA_PROGRAMS = xtwin ftwin twin_ttf
+EXTRA_PROGRAMS =
 
 bin_PROGRAMS =
 lib_LTLIBRARIES = libtwin.la
 pkginclude_HEADERS = twin.h twin_def.h
 
 if TWIN_X11
-bin_PROGRAMS += xtwin
 lib_LTLIBRARIES += libtwin-x11.la
 pkginclude_HEADERS += twin_x11.h
 endif
 
 if TWIN_FB
-bin_PROGRAMS += ftwin
 lib_LTLIBRARIES += libtwin-fbdev.la
 pkginclude_HEADERS += twin_fbdev.h
 endif
@@ -63,21 +61,31 @@ libtwin_x11_la_CPPFLAGS = @X_CFLAGS@
 libtwin_x11_la_LDFLAGS = -version-info @LIB_VERSION@
 libtwin_x11_la_SOURCES = twin_x11.c
 
-xtwin_SOURCES =	xtwin.c
-xtwin_CPPFLAGS = @X_CFLAGS@ -I$(top_srcdir)/twin_demos
-xtwin_LDADD = twin_demos/libtwin_demos.a \
-	libtwin.la libtwin-x11.la @X_LIBS@ -lm
-
 libtwin_fbdev_la_LDFLAGS = -version-info @LIB_VERSION@
 libtwin_fbdev_la_SOURCES = twin_fbdev.c
 
-ftwin_SOURCES = ftwin.c
-ftwin_CPPFLAGS = -I$(top_srcdir)/twin_demos
-ftwin_LDADD = twin_demos/libtwin_demos.a \
-	libtwin.la libtwin-fbdev.la libtwin-mouse.la -lm
-
 # demo twin applications
+EXTRA_PROGRAMS += twin_demos/xtwin twin_demos/ftwin
+noinst_PROGRAMS =
 noinst_LIBRARIES = twin_demos/libtwin_demos.a
+
+if TWIN_X11
+noinst_PROGRAMS += twin_demos/xtwin
+endif
+
+if TWIN_FB
+noinst_PROGRAMS += twin_demos/ftwin
+endif
+
+twin_demos_xtwin_SOURCES = twin_demos/xtwin.c
+twin_demos_xtwin_CPPFLAGS = @X_CFLAGS@ -I$(top_srcdir)/twin_demos
+twin_demos_xtwin_LDADD = twin_demos/libtwin_demos.a \
+	libtwin.la libtwin-x11.la @X_LIBS@ -lm
+
+twin_demos_ftwin_SOURCES = twin_demos/ftwin.c
+twin_demos_ftwin_CPPFLAGS = -I$(top_srcdir)/twin_demos
+twin_demos_ftwin_LDADD = twin_demos/libtwin_demos.a \
+	libtwin.la libtwin-fbdev.la libtwin-mouse.la -lm
 
 twin_demos_libtwin_demos_a_CFLAGS = @WARN_CFLAGS@ -I$(top_srcdir)/twin_demos
 twin_demos_libtwin_demos_a_SOURCES = \
@@ -90,6 +98,8 @@ twin_demos_libtwin_demos_a_SOURCES = \
 	twin_demos/twin_text.c twin_demos/twin_text.h
 
 # twin_ttf
+EXTRA_PROGRAMS += twin_ttf/twin_ttf
+
 if TWIN_TTF
 bin_PROGRAMS += twin_ttf/twin_ttf
 endif
