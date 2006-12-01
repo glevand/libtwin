@@ -618,8 +618,8 @@ void twin_composite (twin_pixmap_t	*dst,
 {
     if ((src->source_kind == TWIN_PIXMAP &&
        !twin_matrix_is_identity(&src->u.pixmap->transform)) ||
-        (msk->source_kind == TWIN_PIXMAP &&
-       !twin_matrix_is_identity(&msk->u.pixmap->transform)))
+        (msk && (msk->source_kind == TWIN_PIXMAP &&
+		 !twin_matrix_is_identity(&msk->u.pixmap->transform))))
         _twin_composite_xform(dst, dst_x, dst_y,
 				  src, src_x, src_y,
 				  msk, msk_x, msk_y,
