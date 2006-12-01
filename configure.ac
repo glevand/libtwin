@@ -40,6 +40,7 @@ AM_CONFIG_HEADER(twin_def.h)
 # Check for progs
 AC_PROG_CC
 AC_PROG_LIBTOOL
+PKG_PROG_PKG_CONFIG
 
 WARN_CFLAGS=""
 
@@ -51,20 +52,45 @@ fi
 AC_SUBST(WARN_CFLAGS)
 
 # Check for X
-PKG_CHECK_MODULES(X, x11, twin_x11="yes", twin_x11="no")
+AC_ARG_ENABLE(x11,
+	AC_HELP_STRING([--disable-x11],
+		[Disable x11 support (default=enabled)]),
+	twin_x11="$enableval", twin_x11="yes")
+
+if test "x$twin_x11" = "xyes"
+then
+	PKG_CHECK_MODULES(X, x11, twin_x11="yes", twin_x11="no")
+fi
 AC_SUBST(X_CFLAGS)
 AC_SUBST(X_LIBS)
 
 # Check for linux framebuffer includes
-AC_CHECK_HEADER(linux/fb.h, twin_fb="yes", twin_fb="no")
+AC_ARG_ENABLE(fbdev,
+	AC_HELP_STRING([--disable-fbdev],
+		[Disable framebuffer support (default=enabled)]),
+	twin_fb="$enableval", twin_fb="yes")
+
+if test "x$twin_fb" = "xyes"
+then
+	AC_CHECK_HEADER(linux/fb.h, twin_fb="yes", twin_fb="no")
+fi
 
 # linux mouse
 AC_ARG_ENABLE(linux-mouse,
-	AC_HELP_STRING([--disable-linux-mouse], [Disable linux mouse support]),
+	AC_HELP_STRING([--disable-linux-mouse],
+		[Disable linux mouse support (default=enabled)]),
 	twin_mouse="$enableval", twin_mouse="yes")
 
 # Check for freetype
-PKG_CHECK_MODULES(FREETYPE, freetype2, twin_ttf="yes", twin_ttf="no")
+AC_ARG_ENABLE(twin-ttf,
+	AC_HELP_STRING([--disable-twin-ttf],
+		[Don't build twin ttf font converter (default=enabled)]),
+	twin_ttf="$enableval", twin_ttf="yes")
+
+if test "x$twin_ttf" = "xyes"
+then
+	PKG_CHECK_MODULES(FREETYPE, freetype2, twin_ttf="yes", twin_ttf="no")
+fi
 AC_SUBST(FREETYPE_LIBS)
 AC_SUBST(FREETYPE_CFLAGS)
 
@@ -80,7 +106,7 @@ AM_CONDITIONAL(TWIN_TTF, test x$twin_ttf = xyes)
 AM_CONDITIONAL(TWIN_MOUSE, test x$twin_mouse = xyes)
 
 AC_MSG_NOTICE([x11 support:    $twin_x11])
-AC_MSG_NOTICE([fb support:     $twin_fb])
+AC_MSG_NOTICE([fbdev support:  $twin_fb])
 AC_MSG_NOTICE([twin_ttf tool:  $twin_ttf])
 AC_MSG_NOTICE([linux mouse:    $twin_mouse])
 
