@@ -6,21 +6,6 @@ bin_PROGRAMS =
 lib_LTLIBRARIES = libtwin.la
 pkginclude_HEADERS = twin.h twin_def.h
 
-if TWIN_X11
-lib_LTLIBRARIES += libtwin-x11.la
-pkginclude_HEADERS += twin_x11.h
-endif
-
-if TWIN_FB
-lib_LTLIBRARIES += libtwin-fbdev.la
-pkginclude_HEADERS += twin_fbdev.h
-endif
-
-if TWIN_MOUSE
-lib_LTLIBRARIES += libtwin-mouse.la
-pkginclude_HEADERS += twin_linux_mouse.h
-endif
-
 libtwin_la_LDFLAGS = -version-info @LIB_VERSION@
 libtwin_la_SOURCES = \
 	twin_box.c \
@@ -54,15 +39,20 @@ libtwin_la_SOURCES = \
 	twin_work.c \
 	twinint.h
 
-libtwin_mouse_la_LDFLAGS = -version-info @LIB_VERSION@
-libtwin_mouse_la_SOURCES = twin_linux_mouse.c
+if TWIN_X11
+pkginclude_HEADERS += twin_x11.h
+libtwin_la_SOURCES += twin_x11.c
+endif
 
-libtwin_x11_la_CPPFLAGS = @X_CFLAGS@
-libtwin_x11_la_LDFLAGS = -version-info @LIB_VERSION@
-libtwin_x11_la_SOURCES = twin_x11.c
+if TWIN_FB
+pkginclude_HEADERS += twin_fbdev.h
+libtwin_la_SOURCES += twin_fbdev.c
+endif
 
-libtwin_fbdev_la_LDFLAGS = -version-info @LIB_VERSION@
-libtwin_fbdev_la_SOURCES = twin_fbdev.c
+if TWIN_MOUSE
+pkginclude_HEADERS += twin_linux_mouse.h
+libtwin_la_SOURCES += twin_linux_mouse.c
+endif
 
 # demo twin applications
 EXTRA_PROGRAMS += twin_demos/xtwin twin_demos/ftwin
@@ -78,14 +68,14 @@ noinst_PROGRAMS += twin_demos/ftwin
 endif
 
 twin_demos_xtwin_SOURCES = twin_demos/xtwin.c
-twin_demos_xtwin_CPPFLAGS = @X_CFLAGS@ -I$(top_srcdir)/twin_demos
-twin_demos_xtwin_LDADD = twin_demos/libtwin_demos.a \
-	libtwin.la libtwin-x11.la @X_LIBS@ -lm
+twin_demos_xtwin_CFLAGS = @TWIN_DEP_CFLAGS@ -I$(top_srcdir)/twin_demos
+twin_demos_xtwin_LDADD = twin_demos/libtwin_demos.a libtwin.la \
+	@TWIN_DEP_LDFLAGS@
 
 twin_demos_ftwin_SOURCES = twin_demos/ftwin.c
-twin_demos_ftwin_CPPFLAGS = -I$(top_srcdir)/twin_demos
-twin_demos_ftwin_LDADD = twin_demos/libtwin_demos.a \
-	libtwin.la libtwin-fbdev.la libtwin-mouse.la -lm
+twin_demos_ftwin_CFLAGS = @TWIN_DEP_CFLAGS@ -I$(top_srcdir)/twin_demos
+twin_demos_ftwin_LDADD = twin_demos/libtwin_demos.a libtwin.la \
+	@TWIN_DEP_LDFLAGS@
 
 twin_demos_libtwin_demos_a_CFLAGS = @WARN_CFLAGS@ -I$(top_srcdir)/twin_demos
 twin_demos_libtwin_demos_a_SOURCES = \
