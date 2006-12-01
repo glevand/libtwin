@@ -59,6 +59,9 @@ pkginclude_HEADERS += twin_png.h
 libtwin_la_SOURCES += twin_png.c
 endif
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libtwin.pc
+
 # demo twin applications
 EXTRA_PROGRAMS += twin_demos/xtwin twin_demos/ftwin
 noinst_PROGRAMS =
