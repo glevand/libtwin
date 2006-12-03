@@ -343,12 +343,16 @@ twin_window_draw (twin_window_t *window)
     twin_pixmap_clip(pixmap,
 		     window->damage.left, window->damage.top,
 		     window->damage.right, window->damage.bottom);
+    twin_screen_disable_update(window->screen);
+
     (*window->draw) (window);
 
     /* damage matching screen area */
     twin_pixmap_damage(pixmap,
-		     window->damage.left, window->damage.top,
-		     window->damage.right, window->damage.bottom);
+		       window->damage.left, window->damage.top,
+		       window->damage.right, window->damage.bottom);
+
+    twin_screen_enable_update(window->screen);
 
     /* clear damage and restore clip */
     window->damage.left = window->damage.right = 0;

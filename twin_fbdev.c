@@ -42,6 +42,8 @@
 
 #include "twin_fbdev.h"
 
+#define _IMMEDIATE_REFRESH
+
 /* We might want to have more error logging options */
 #define SERROR(fmt...)	do { fprintf(stderr, fmt); \
 			     fprintf(stderr, " : %s\n", strerror(errno)); \
@@ -170,12 +172,13 @@ static void twin_fbdev_switch(twin_fbdev_t *tf, int activate)
 
 		/* Restore fbdev settings */
 		if (twin_fbdev_apply_config(tf)) {
+			tf->active = 1;
+
 			/* Mark entire screen for refresh */
 			if (tf->screen)
 				twin_screen_damage (tf->screen, 0, 0,
 						    tf->screen->width,
 						    tf->screen->height);
-			tf->active = 1;
 		}
 	} else {
 		/* Allow switch. Maybe we want to expose some option
@@ -200,11 +203,31 @@ static twin_bool_t twin_fbdev_work(void *closure)
 		vt_switch_pending = 0;
 	}
 
+#ifndef _IMMEDIATE_REFRESH
 	if (tf->screen && tf->active &&
 	    twin_screen_damaged (tf->screen))
 		twin_screen_update(tf->screen);
+#endif /* _IMMEDIATE_REFRESH */
+
 	return TWIN_TRUE;
 }
+
+#ifdef _IMMEDIATE_REFRESH
+static void twin_fbdev_damaged(void *closure)
+{
+	twin_fbdev_t *tf = closure;
+
+#if 0
+	DEBUG("fbdev damaged %d,%d,%d,%d, active=%d\n",
+	      tf->screen->damage.left, tf->screen->damage.top,
+	      tf->screen->damage.right, tf->screen->damage.bottom,
+	      tf->active);
+#endif
+
+	if (tf->active && twin_screen_damaged (tf->screen))
+		twin_screen_update(tf->screen);
+}
+#endif /* _IMMEDIATE_REFRESH */
 
 static void twin_fbdev_vtswitch(int sig)
 {
@@ -464,6 +487,9 @@ twin_fbdev_t *twin_fbdev_create(int wanted_vt, int switch_sig)
 
 	twin_set_file(twin_fbdev_read_events, tf->vt_fd, TWIN_READ, tf);
 
+#ifdef _IMMEDIATE_REFRESH
+	twin_screen_register_damaged(tf->screen, twin_fbdev_damaged, tf);
+#endif
 	twin_fb = tf;
 	return tf;
 

@@ -293,8 +293,11 @@ void
 twin_screen_set_cursor (twin_screen_t *screen, twin_pixmap_t *pixmap,
 			twin_fixed_t hotspot_x, twin_fixed_t hotspot_y)
 {
+    twin_screen_disable_update(screen);
+
     if (screen->cursor)
 	twin_screen_damage_cursor(screen);
+
     screen->cursor = pixmap;
     screen->curs_hx = hotspot_x;
     screen->curs_hy = hotspot_y;
@@ -303,12 +306,16 @@ twin_screen_set_cursor (twin_screen_t *screen, twin_pixmap_t *pixmap,
 	    pixmap->y = screen->curs_y - hotspot_y;
 	    twin_screen_damage_cursor(screen);
     }
+
+    twin_screen_enable_update(screen);
 }
 
 static void
 twin_screen_update_cursor(twin_screen_t *screen,
 			  twin_coord_t x, twin_coord_t y)
 {
+    twin_screen_disable_update(screen);
+
     if (screen->cursor)
 	twin_screen_damage_cursor(screen);
 
@@ -320,6 +327,8 @@ twin_screen_update_cursor(twin_screen_t *screen,
 	screen->cursor->y = screen->curs_y - screen->curs_hy;
 	twin_screen_damage_cursor(screen);
     }
+
+    twin_screen_enable_update(screen);
 }
 
 static void _twin_adj_mouse_evt(twin_event_t *event, twin_pixmap_t *pixmap)
