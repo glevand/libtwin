@@ -212,15 +212,18 @@ struct _twin_screen {
      * List of displayed pixmaps
      */
     twin_pixmap_t	*top, *bottom;
+
     /*
      * One of them receives all key events
      */
     twin_pixmap_t	*active;
+
     /*
      * this pixmap is target of mouse events
      */
     twin_pixmap_t	*target;
     twin_bool_t		clicklock;
+
     /*
      * mouse image (optional)
      */
@@ -234,10 +237,12 @@ struct _twin_screen {
      * Output size
      */
     twin_coord_t	width, height;
+
     /*
      * Background pattern
      */
     twin_pixmap_t	*background;
+
     /*
      * Damage
      */
@@ -245,16 +250,19 @@ struct _twin_screen {
     void		(*damaged) (void *);
     void		*damaged_closure;
     twin_count_t	disable;
+
     /*
      * Repaint function
      */
     twin_put_begin_t	put_begin;
     twin_put_span_t	put_span;
     void		*closure;
+
     /*
      * Window manager stuff
      */
     twin_coord_t	button_x, button_y;
+
     /*
      * Event filter
      */
