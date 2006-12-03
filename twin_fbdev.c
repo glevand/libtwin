@@ -217,20 +217,31 @@ static twin_bool_t twin_fbdev_read_events(int file, twin_file_op_t ops,
 {
 	twin_fbdev_t *tf = closure;
 	unsigned char events[16];
-	int i, count;
+	twin_event_t evt;
+	int i, count, down;
 
 	count = read(file, events, 16);
 
 	for (i = 0; i < count; i++) {
 		unsigned char e = events[i];
 
-		/* Handle special keys */
+		down = !!(e & 0x80);
+		e &= 0x7f;
+
+		/* XXX Handle special keys (make more configurable) */
 		switch(e) {
 		case KEY_F1...KEY_F10:
-			ioctl(tf->vt_fd, VT_ACTIVATE, e - KEY_F1 + 1);
+			if (down)
+				ioctl(tf->vt_fd, VT_ACTIVATE, e - KEY_F1 + 1);
 			break;
 		case KEY_ESC:
-			kill(0, SIGINT);
+			if (down)
+				kill(0, SIGINT);
+			break;
+		default:
+			evt.kind = down ? TwinEventKeyDown : TwinEventKeyUp;
+			evt.u.key.key = e;
+			twin_screen_dispatch(tf->screen, &evt);
 			break;
 		}
 	}
