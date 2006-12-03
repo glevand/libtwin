@@ -73,10 +73,10 @@ twin_window_create (twin_screen_t	*screen,
     twin_pixmap_origin_to_clip (window->pixmap);
     window->pixmap->window = window;
     twin_pixmap_move (window->pixmap, x, y);
-    window->damage.left = window->damage.right = 0;
-    window->damage.top = window->damage.bottom = 0;
+    window->damage = window->client;
     window->client_grab = TWIN_FALSE;
     window->want_focus = TWIN_FALSE;
+    window->draw_queued = TWIN_FALSE;
     window->client_data = 0;
     window->name = 0;
     
@@ -331,8 +331,84 @@ twin_window_draw (twin_window_t *window)
 	twin_window_frame (window);
 	break;
     }
-    if (window->draw)
-	(*window->draw) (window);
+
+    /* if no draw function or no damage, return */
+    if (window->draw == NULL ||
+	(window->damage.left >= window->damage.right ||
+	 window->damage.top >= window->damage.bottom))
+	return;
+
+    /* clip to damaged area and draw */
+    twin_pixmap_reset_clip (pixmap);
+    twin_pixmap_clip(pixmap,
+		     window->damage.left, window->damage.top,
+		     window->damage.right, window->damage.bottom);
+    (*window->draw) (window);
+
+    /* damage matching screen area */
+    twin_pixmap_damage(pixmap,
+		     window->damage.left, window->damage.top,
+		     window->damage.right, window->damage.bottom);
+
+    /* clear damage and restore clip */
+    window->damage.left = window->damage.right = 0;
+    window->damage.top = window->damage.bottom = 0;
+    twin_pixmap_reset_clip (pixmap);
+    twin_pixmap_clip (pixmap,
+		      window->client.left, window->client.top,
+		      window->client.right, window->client.bottom);
+}
+
+/* window keep track of local damage */
+void twin_window_damage (twin_window_t *window,
+			 twin_coord_t left, twin_coord_t top,
+			 twin_coord_t right, twin_coord_t bottom)
+{
+    if (left < window->client.left)
+	left = window->client.left;
+    if (top < window->client.top)
+	top = window->client.top;
+    if (right > window->client.right)
+	right = window->client.right;
+    if (bottom > window->client.bottom)
+	bottom = window->client.bottom;
+
+    if (window->damage.left == window->damage.right)
+    {
+	window->damage.left = left;
+	window->damage.right = right;
+	window->damage.top = top;
+	window->damage.bottom = bottom;
+    }
+    else
+    {
+	if (left < window->damage.left)
+	    window->damage.left = left;
+	if (top < window->damage.top)
+	    window->damage.top = top;
+	if (window->damage.right < right)
+	    window->damage.right = right;
+	if (window->damage.bottom < bottom)
+	    window->damage.bottom = bottom;
+    }
+}
+
+static twin_bool_t _twin_window_repaint (void *closure)
+{
+    twin_window_t *window = closure;
+
+    window->draw_queued = TWIN_FALSE;
+    twin_window_draw(window);
+
+    return TWIN_FALSE;
+}
+
+void twin_window_queue_paint (twin_window_t *window)
+{
+    if (!window->draw_queued) {
+	window->draw_queued = TWIN_TRUE;
+	twin_set_work (_twin_window_repaint, TWIN_WORK_PAINT, window);
+    }
 }
 
 twin_bool_t

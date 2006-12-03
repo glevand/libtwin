@@ -397,6 +397,7 @@ struct _twin_window {
     twin_rect_t		damage;
     twin_bool_t		client_grab;
     twin_bool_t		want_focus;
+    twin_bool_t		draw_queued;
     void		*client_data;
     char		*name;
     
@@ -1203,6 +1204,14 @@ twin_window_style_size (twin_window_style_t style,
 
 void
 twin_window_draw (twin_window_t *window);
+
+void
+twin_window_damage (twin_window_t *window,
+		    twin_coord_t left, twin_coord_t top,
+		    twin_coord_t right, twin_coord_t bottom);
+
+void
+twin_window_queue_paint (twin_window_t *window);
 
 twin_bool_t
 twin_window_dispatch (twin_window_t *window, twin_event_t *event);
