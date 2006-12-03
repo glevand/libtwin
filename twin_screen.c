@@ -334,6 +334,9 @@ twin_bool_t twin_screen_dispatch (twin_screen_t *screen,
 {
     twin_pixmap_t   *pixmap, *ntarget;
     
+    if (screen->event_filter && screen->event_filter(screen, event))
+	    return TWIN_TRUE;
+
     switch (event->kind) {
     case TwinEventMotion:
     case TwinEventButtonDown:

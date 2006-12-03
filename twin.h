@@ -88,6 +88,60 @@ typedef union _twin_pointer {
 } twin_pointer_t;
 
 typedef struct _twin_window twin_window_t;
+typedef struct _twin_screen twin_screen_t;
+
+/*
+ * Events
+ */
+
+typedef enum _twin_event_kind {
+    /* Mouse */
+    TwinEventButtonDown		= 0x0001,
+    TwinEventButtonUp		= 0x0002,
+    TwinEventMotion		= 0x0003,
+    TwinEventEnter		= 0x0004,
+    TwinEventLeave		= 0x0005,
+
+    /* keyboard */
+    TwinEventKeyDown		= 0x0101,
+    TwinEventKeyUp		= 0x0102,
+    TwinEventUcs4		= 0x0103,
+
+    /* Focus */
+    TwinEventActivate		= 0x0201,
+    TwinEventDeactivate		= 0x0202,
+
+    /* Widgets */
+    TwinEventPaint		= 0x1001,
+    TwinEventQueryGeometry	= 0x1002,
+    TwinEventConfigure		= 0x1003,
+    TwinEventDestroy		= 0x1004,
+} twin_event_kind_t;
+
+typedef struct _twin_event {
+    twin_event_kind_t	kind;
+    union {
+	struct {
+	    twin_coord_t    x, y;
+	    twin_coord_t    screen_x, screen_y;
+	    twin_count_t    button;
+	} pointer;
+	struct {
+	    twin_keysym_t   key;
+	} key;
+	struct {
+	    twin_ucs4_t	    ucs4;
+	} ucs4;
+	struct {
+	    twin_rect_t	    extents;
+	} configure;
+    } u;
+} twin_event_t;
+
+typedef struct _twin_event_queue {
+    struct _twin_event_queue	*next;
+    twin_event_t		event;
+} twin_event_queue_t;
 
 /*
  * A rectangular array of pixels
@@ -153,7 +207,7 @@ typedef void	(*twin_put_span_t) (twin_coord_t left,
 /*
  * A screen
  */
-typedef struct _twin_screen {
+struct _twin_screen {
     /*
      * List of displayed pixmaps
      */
@@ -201,7 +255,13 @@ typedef struct _twin_screen {
      * Window manager stuff
      */
     twin_coord_t	button_x, button_y;
-} twin_screen_t;
+    /*
+     * Event filter
+     */
+    twin_bool_t		(*event_filter) (twin_screen_t	    *screen,
+					 twin_event_t	    *event);
+	
+};
 
 /*
  * A source operand
@@ -317,58 +377,6 @@ extern twin_font_t	*g_twin_font;
 /* Built-in default stroke font */
 extern twin_font_t	twin_Default_Font_Roman;
 
-/*
- * Events
- */
-
-typedef enum _twin_event_kind {
-    /* Mouse */
-    TwinEventButtonDown		= 0x0001,
-    TwinEventButtonUp		= 0x0002,
-    TwinEventMotion		= 0x0003,
-    TwinEventEnter		= 0x0004,
-    TwinEventLeave		= 0x0005,
-
-    /* keyboard */
-    TwinEventKeyDown		= 0x0101,
-    TwinEventKeyUp		= 0x0102,
-    TwinEventUcs4		= 0x0103,
-
-    /* Focus */
-    TwinEventActivate		= 0x0201,
-    TwinEventDeactivate		= 0x0202,
-
-    /* Widgets */
-    TwinEventPaint		= 0x1001,
-    TwinEventQueryGeometry	= 0x1002,
-    TwinEventConfigure		= 0x1003,
-    TwinEventDestroy		= 0x1004,
-} twin_event_kind_t;
-
-typedef struct _twin_event {
-    twin_event_kind_t	kind;
-    union {
-	struct {
-	    twin_coord_t    x, y;
-	    twin_coord_t    screen_x, screen_y;
-	    twin_count_t    button;
-	} pointer;
-	struct {
-	    twin_keysym_t   key;
-	} key;
-	struct {
-	    twin_ucs4_t	    ucs4;
-	} ucs4;
-	struct {
-	    twin_rect_t	    extents;
-	} configure;
-    } u;
-} twin_event_t;
-
-typedef struct _twin_event_queue {
-    struct _twin_event_queue	*next;
-    twin_event_t		event;
-} twin_event_queue_t;
 
 /*
  * Windows
