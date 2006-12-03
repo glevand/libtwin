@@ -230,17 +230,21 @@ _twin_box_dispatch (twin_widget_t *widget, twin_event_t *event)
 	    if (child->paint)
 	    {
 		twin_pixmap_t	*pixmap = box->widget.window->pixmap;
-		twin_rect_t	clip = twin_pixmap_current_clip (pixmap);
+		twin_rect_t	clip = twin_pixmap_save_clip (pixmap);
+		twin_coord_t	ox, oy;
 
+		twin_pixmap_get_origin (pixmap, &ox, &oy);
 		if (child->shape != TwinShapeRectangle)
 		    twin_fill (child->window->pixmap,
 			       widget->background, TWIN_SOURCE,
 			       child->extents.left, child->extents.top,
 			       child->extents.right, child->extents.bottom);
 		twin_pixmap_set_clip (pixmap, child->extents);
+		twin_pixmap_origin_to_clip (pixmap);
 		child->paint = TWIN_FALSE;
 		(*child->dispatch) (child, event);
 		twin_pixmap_restore_clip (pixmap, clip);
+		twin_pixmap_set_origin (pixmap, ox, oy);
 	    }
 	break;
     default:

@@ -276,8 +276,8 @@ static void _twin_composite_simple (twin_pixmap_t	*dst,
     twin_coord_t    sdx, sdy;
     twin_source_u   s;
 
-    dst_x += dst->clip.left;
-    dst_y += dst->clip.top;
+    dst_x += dst->origin_x;
+    dst_y += dst->origin_y;
     left = dst_x;
     top = dst_y;
     right = dst_x + width;
@@ -296,7 +296,10 @@ static void _twin_composite_simple (twin_pixmap_t	*dst,
     if (left >= right || top >= bottom)
 	return;
 
-    if (src->source_kind != TWIN_PIXMAP)
+    if (src->source_kind == TWIN_PIXMAP) {
+	src_x += src->u.pixmap->origin_x;
+	src_y += src->u.pixmap->origin_y;
+    } else
         s.c = src->u.argb;
     
     sdx = src_x - dst_x;
@@ -307,7 +310,10 @@ static void _twin_composite_simple (twin_pixmap_t	*dst,
 	twin_source_u   m;
 	twin_coord_t	mdx, mdy;
 	
-	if (msk->source_kind != TWIN_PIXMAP)
+	if (msk->source_kind == TWIN_PIXMAP) {
+	    msk_x += msk->u.pixmap->origin_x;
+	    msk_y += msk->u.pixmap->origin_y;
+	} else
 	    m.c = msk->u.argb;
 	
 	mdx = msk_x - dst_x;
@@ -533,8 +539,8 @@ static void _twin_composite_xform (twin_pixmap_t	*dst,
     twin_xform_t    *sxform = NULL, *mxform = NULL;
     twin_source_u   s;
 
-    dst_x += dst->clip.left;
-    dst_y += dst->clip.top;
+    dst_x += dst->origin_x;
+    dst_y += dst->origin_y;
     left = dst_x;
     top = dst_y;
     right = dst_x + width;
@@ -556,7 +562,9 @@ static void _twin_composite_xform (twin_pixmap_t	*dst,
     width = right - left;
     height = bottom - top;
 
-    if (src->source_kind == TWIN_PIXMAP) {
+    if (src->source_kind == TWIN_PIXMAP) {	
+	src_x += src->u.pixmap->origin_x;
+	src_y += src->u.pixmap->origin_y;
 	sxform = twin_pixmap_init_xform(src->u.pixmap, left, width,
 					src_x, src_y);
 	if (sxform == NULL)
@@ -570,6 +578,8 @@ static void _twin_composite_xform (twin_pixmap_t	*dst,
 	twin_source_u   m;
 	
 	if (msk->source_kind == TWIN_PIXMAP) {
+	    msk_x += msk->u.pixmap->origin_x;
+	    msk_y += msk->u.pixmap->origin_y;
 	    mxform = twin_pixmap_init_xform(msk->u.pixmap, left, width,
 					    msk_x, msk_y);
 	    if (mxform == NULL)
@@ -660,11 +670,13 @@ twin_fill (twin_pixmap_t    *dst,
     twin_src_op	    op;
     twin_source_u   src;
     twin_coord_t    iy;
-    
-    left += dst->clip.left;
-    right += dst->clip.left;
-    top += dst->clip.top;
-    bottom += dst->clip.top;
+
+    /* offset */
+    left += dst->origin_x;
+    top += dst->origin_y;
+    right += dst->origin_x;
+    bottom += dst->origin_y;
+
     /* clip */
     if (left < dst->clip.left)
 	left = dst->clip.left;

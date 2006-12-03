@@ -117,9 +117,13 @@ typedef struct _twin_pixmap {
 
     /*
      * Clipping - a single rectangle in pixmap coordinates.
-     * Drawing is done relative to this rectangle
+     * Drawing is done clipped by this rectangle and relative
+     * to origin_x, origin_y
      */
     twin_rect_t			clip;
+    twin_coord_t		origin_x;
+    twin_coord_t		origin_y;
+
     /*
      * Pixels
      */
@@ -955,15 +959,35 @@ void
 twin_pixmap_disable_update (twin_pixmap_t *pixmap);
 
 void
-twin_pixmap_clip (twin_pixmap_t *pixmap,
+twin_pixmap_get_origin (twin_pixmap_t *pixmap,
+			twin_coord_t *ox, twin_coord_t *oy);
+
+void
+twin_pixmap_set_origin (twin_pixmap_t *pixmap,
+			twin_coord_t ox, twin_coord_t oy);
+
+void
+twin_pixmap_origin_to_clip (twin_pixmap_t *pixmap);
+
+void
+twin_pixmap_offset (twin_pixmap_t *pixmap,
+		    twin_coord_t offx, twin_coord_t offy);
+
+
+void
+twin_pixmap_clip (twin_pixmap_t	*pixmap,
 		  twin_coord_t	left,	twin_coord_t top,
 		  twin_coord_t	right,	twin_coord_t bottom);
 
 void
 twin_pixmap_set_clip (twin_pixmap_t *pixmap, twin_rect_t clip);
 
+
 twin_rect_t
-twin_pixmap_current_clip (twin_pixmap_t *pixmap);
+twin_pixmap_get_clip (twin_pixmap_t *pixmap);
+
+twin_rect_t
+twin_pixmap_save_clip (twin_pixmap_t *pixmap);
 
 void
 twin_pixmap_restore_clip (twin_pixmap_t *pixmap, twin_rect_t rect);

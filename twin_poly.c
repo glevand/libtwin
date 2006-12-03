@@ -206,8 +206,8 @@ _span_fill (twin_pixmap_t   *pixmap,
     if (left < twin_int_to_sfixed (pixmap->clip.left))
 	left = twin_int_to_sfixed (pixmap->clip.left);
     
-    if (right > twin_int_to_sfixed (pixmap->width))
-	right = twin_int_to_sfixed (pixmap->width);
+    if (right > twin_int_to_sfixed (pixmap->clip.right))
+	right = twin_int_to_sfixed (pixmap->clip.right);
 
     /* convert to sample grid */
     left = _twin_sfixed_grid_ceil (left) >> TWIN_POLY_FIXED_SHIFT;
@@ -353,15 +353,13 @@ twin_fill_path (twin_pixmap_t *pixmap, twin_path_t *path,
     int		    nalloc;
     int		    s;
     int		    p;
-    twin_sfixed_t   sdx = twin_int_to_sfixed (dx);
-    twin_sfixed_t   sdy = twin_int_to_sfixed (dy);
+    twin_sfixed_t   sdx = twin_int_to_sfixed (dx + pixmap->origin_x);
+    twin_sfixed_t   sdy = twin_int_to_sfixed (dy + pixmap->origin_y);
 
     nalloc = path->npoints + path->nsublen + 1;
     edges = malloc (sizeof (twin_edge_t) * nalloc);
     p = 0;
     nedges = 0;
-    dx += twin_int_to_sfixed (pixmap->clip.left);
-    dy += twin_int_to_sfixed (pixmap->clip.top);
     for (s = 0; s <= path->nsublen; s++)
     {
 	int sublen;
@@ -375,7 +373,8 @@ twin_fill_path (twin_pixmap_t *pixmap, twin_path_t *path,
 	if (npoints > 1)
 	{
 	    n = _twin_edge_build (path->points + p, npoints, edges + nedges,
-				  sdx, sdy, twin_int_to_sfixed (pixmap->clip.top));
+				  sdx, sdy,
+				  twin_int_to_sfixed (pixmap->clip.top));
 	    p = sublen;
 	    nedges += n;
 	}

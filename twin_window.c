@@ -70,6 +70,7 @@ twin_window_create (twin_screen_t	*screen,
     twin_pixmap_clip (window->pixmap,
 		      window->client.left, window->client.top,
 		      window->client.right, window->client.bottom);
+    twin_pixmap_origin_to_clip (window->pixmap);
     window->pixmap->window = window;
     twin_pixmap_move (window->pixmap, x, y);
     window->damage.left = window->damage.right = 0;
@@ -136,9 +137,11 @@ twin_window_configure (twin_window_t	    *window,
 	for (i = 0; i < old->disable; i++)
 	    twin_pixmap_disable_update (window->pixmap);
 	twin_pixmap_destroy (old);
+	twin_pixmap_reset_clip (window->pixmap);
 	twin_pixmap_clip (window->pixmap,
 			  window->client.left, window->client.top,
 			  window->client.right, window->client.bottom);
+	twin_pixmap_origin_to_clip (window->pixmap);
     }
     if (x != window->pixmap->x || y != window->pixmap->y)
 	twin_pixmap_move (window->pixmap, x, y);
@@ -207,6 +210,7 @@ twin_window_frame (twin_window_t *window)
     const char		*name;
     
     twin_pixmap_reset_clip (pixmap);
+    twin_pixmap_origin_to_clip (pixmap);
     
     twin_fill (pixmap, 0x00000000, TWIN_SOURCE, 
 	       0, 0, pixmap->width, window->client.top);
@@ -264,12 +268,14 @@ twin_window_frame (twin_window_t *window)
 		      0,
 		      twin_fixed_to_int (twin_fixed_ceil (c_right - t_arc_2)),
 		      window->client.top);
-    
+    twin_pixmap_origin_to_clip (pixmap);
+
     twin_path_move (path, text_x - twin_fixed_floor (menu_x), text_y);
     twin_path_utf8 (path, window->name);
     twin_paint_path (pixmap, TWIN_FRAME_TEXT, path);
 
     twin_pixmap_reset_clip (pixmap);
+    twin_pixmap_origin_to_clip (pixmap);
 	
     /* widgets */
 
@@ -307,12 +313,16 @@ twin_window_frame (twin_window_t *window)
     twin_pixmap_clip (pixmap,
 		      window->client.left, window->client.top,
 		      window->client.right, window->client.bottom);
+    twin_pixmap_origin_to_clip (pixmap);
+
     twin_path_destroy (path);
 }
 
 void
 twin_window_draw (twin_window_t *window)
 {
+    twin_pixmap_t *pixmap = window->pixmap;
+
     switch (window->style) {
     case TwinWindowPlain:
     default:

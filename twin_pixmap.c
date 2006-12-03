@@ -43,6 +43,7 @@ twin_pixmap_create (twin_format_t   format,
     pixmap->clip.left = pixmap->clip.top = 0;
     pixmap->clip.right = pixmap->width;
     pixmap->clip.bottom = pixmap->height;
+    pixmap->origin_x = pixmap->origin_y = 0;
     pixmap->stride = stride;
     pixmap->disable = 0;
     pixmap->p.v = pixmap + 1;
@@ -71,6 +72,7 @@ twin_pixmap_create_const (twin_format_t	    format,
     pixmap->clip.left = pixmap->clip.top = 0;
     pixmap->clip.right = pixmap->width;
     pixmap->clip.bottom = pixmap->height;
+    pixmap->origin_x = pixmap->origin_y = 0;
     pixmap->stride = stride;
     pixmap->disable = 0;
     pixmap->p = pixels;
@@ -184,32 +186,90 @@ twin_pixmap_disable_update (twin_pixmap_t *pixmap)
 }
 
 void
+twin_pixmap_set_origin (twin_pixmap_t *pixmap,
+			twin_coord_t ox, twin_coord_t oy)
+{
+	pixmap->origin_x = ox;
+	pixmap->origin_y = oy;
+}
+
+void
+twin_pixmap_offset (twin_pixmap_t *pixmap,
+		    twin_coord_t offx, twin_coord_t offy)
+{
+	pixmap->origin_x += offx;
+	pixmap->origin_y += offy;
+}
+
+void
+twin_pixmap_get_origin (twin_pixmap_t *pixmap,
+			twin_coord_t *ox, twin_coord_t *oy)
+{
+    *ox = pixmap->origin_x;
+    *oy = pixmap->origin_y;
+}
+
+void
+twin_pixmap_origin_to_clip (twin_pixmap_t *pixmap)
+{
+    pixmap->origin_x = pixmap->clip.left;
+    pixmap->origin_y = pixmap->clip.top;
+}
+
+void
 twin_pixmap_clip (twin_pixmap_t *pixmap,
 		  twin_coord_t	left,	twin_coord_t top,
 		  twin_coord_t	right,	twin_coord_t bottom)
 {
+    left += pixmap->origin_x;
+    right += pixmap->origin_x;
+    top += pixmap->origin_y;
+    bottom += pixmap->origin_y;
+
     if (left > pixmap->clip.left)	pixmap->clip.left = left;
     if (top > pixmap->clip.top)		pixmap->clip.top = top;
     if (right < pixmap->clip.right)	pixmap->clip.right = right;
     if (bottom < pixmap->clip.bottom)	pixmap->clip.bottom = bottom;
+
     if (pixmap->clip.left >= pixmap->clip.right)
 	pixmap->clip.right = pixmap->clip.left = 0;
     if (pixmap->clip.top >= pixmap->clip.bottom)
 	pixmap->clip.bottom = pixmap->clip.top = 0;
+
+    if (pixmap->clip.left < 0)
+	pixmap->clip.left = 0;
+    if (pixmap->clip.top < 0)
+	pixmap->clip.top = 0;
+    if (pixmap->clip.right > pixmap->width)
+	pixmap->clip.right = pixmap->width;
+    if (pixmap->clip.bottom > pixmap->height)
+	pixmap->clip.bottom = pixmap->height;
 }
 
 void
 twin_pixmap_set_clip (twin_pixmap_t *pixmap, twin_rect_t clip)
 {
     twin_pixmap_clip (pixmap, 
-		      clip.left  + pixmap->clip.left,
-		      clip.top   + pixmap->clip.top,
-		      clip.right + pixmap->clip.left,
-		      clip.bottom+ pixmap->clip.top);
+		      clip.left, clip.top,
+		      clip.right, clip.bottom);
+}
+
+
+twin_rect_t
+twin_pixmap_get_clip (twin_pixmap_t *pixmap)
+{
+    twin_rect_t clip = pixmap->clip;
+
+    clip.left -= pixmap->origin_x;
+    clip.right -= pixmap->origin_x;
+    clip.top -= pixmap->origin_y;
+    clip.bottom -= pixmap->origin_y;
+
+    return clip;
 }
 
 twin_rect_t
-twin_pixmap_current_clip (twin_pixmap_t *pixmap)
+twin_pixmap_save_clip (twin_pixmap_t *pixmap)
 {
     return pixmap->clip;
 }
