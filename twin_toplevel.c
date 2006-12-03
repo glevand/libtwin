@@ -57,8 +57,10 @@ _twin_toplevel_draw (twin_window_t    *window)
     twin_toplevel_t   *toplevel = window->client_data;
     twin_event_t	event;
 
+    twin_screen_disable_update(window->screen);
     event.kind = TwinEventPaint;
     (*toplevel->box.widget.dispatch) (&toplevel->box.widget, &event);
+    twin_screen_enable_update(window->screen);
 }
 
 static void
@@ -122,9 +124,11 @@ _twin_toplevel_paint (void *closure)
 {
     twin_toplevel_t *toplevel = closure;
     twin_event_t    ev;
-
+    
+    twin_screen_disable_update(toplevel->box.widget.window->screen);
     ev.kind = TwinEventPaint;
     (*toplevel->box.widget.dispatch) (&toplevel->box.widget, &ev);
+    twin_screen_enable_update(toplevel->box.widget.window->screen);
     return TWIN_FALSE;
 }
 
