@@ -3,60 +3,61 @@ AM_CFLAGS = @WARN_CFLAGS@
 EXTRA_PROGRAMS =
 
 bin_PROGRAMS =
-lib_LTLIBRARIES = libtwin.la
-pkginclude_HEADERS = twin.h twin_def.h
+lib_LTLIBRARIES = libtwin/libtwin.la
+pkginclude_HEADERS = libtwin/twin.h
 
-libtwin_la_LDFLAGS = -version-info @LIB_VERSION@
-libtwin_la_SOURCES = \
-	twin_box.c \
-	twin_button.c \
-	twin_convolve.c \
-	twin_cursor.c \
-	twin_dispatch.c \
-	twin_draw.c \
-	twin_hull.c \
-	twin_icon.c \
-	twin_file.c \
-	twin_fixed.c \
-	twin_font.c \
-	twin_font_default.c \
-	twin_geom.c \
-	twin_label.c \
-	twin_matrix.c \
-	twin_path.c \
-	twin_pattern.c \
-	twin_pixmap.c \
-	twin_poly.c \
-	twin_primitive.c \
-	twin_queue.c \
-	twin_screen.c \
-	twin_spline.c \
-	twin_timeout.c \
-	twin_toplevel.c \
-	twin_trig.c \
-	twin_widget.c \
-	twin_window.c \
-	twin_work.c \
-	twinint.h
+libtwin_libtwin_la_LDFLAGS = -version-info @LIB_VERSION@
+libtwin_libtwin_la_SOURCES = \
+	libtwin/twin_box.c \
+	libtwin/twin_button.c \
+	libtwin/twin_convolve.c \
+	libtwin/twin_cursor.c \
+	libtwin/twin_dispatch.c \
+	libtwin/twin_draw.c \
+	libtwin/twin_hull.c \
+	libtwin/twin_icon.c \
+	libtwin/twin_file.c \
+	libtwin/twin_fixed.c \
+	libtwin/twin_font.c \
+	libtwin/twin_font_default.c \
+	libtwin/twin_geom.c \
+	libtwin/twin_label.c \
+	libtwin/twin_matrix.c \
+	libtwin/twin_path.c \
+	libtwin/twin_pattern.c \
+	libtwin/twin_pixmap.c \
+	libtwin/twin_poly.c \
+	libtwin/twin_primitive.c \
+	libtwin/twin_queue.c \
+	libtwin/twin_screen.c \
+	libtwin/twin_spline.c \
+	libtwin/twin_timeout.c \
+	libtwin/twin_toplevel.c \
+	libtwin/twin_trig.c \
+	libtwin/twin_widget.c \
+	libtwin/twin_window.c \
+	libtwin/twin_work.c \
+	libtwin/twin_def.h \
+	libtwin/twinint.h
 
 if TWIN_X11
-pkginclude_HEADERS += twin_x11.h
-libtwin_la_SOURCES += twin_x11.c
+pkginclude_HEADERS += libtwin/twin_x11.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_x11.c
 endif
 
 if TWIN_FB
-pkginclude_HEADERS += twin_fbdev.h
-libtwin_la_SOURCES += twin_fbdev.c
+pkginclude_HEADERS += libtwin/twin_fbdev.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_fbdev.c
 endif
 
 if TWIN_MOUSE
-pkginclude_HEADERS += twin_linux_mouse.h
-libtwin_la_SOURCES += twin_linux_mouse.c
+pkginclude_HEADERS += libtwin/twin_linux_mouse.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_linux_mouse.c
 endif
 
 if TWIN_PNG
-pkginclude_HEADERS += twin_png.h
-libtwin_la_SOURCES += twin_png.c
+pkginclude_HEADERS += libtwin/twin_png.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_png.c
 endif
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -77,12 +78,12 @@ endif
 
 twin_demos_xtwin_SOURCES = twin_demos/xtwin.c
 twin_demos_xtwin_CFLAGS = @TWIN_DEP_CFLAGS@ -I$(top_srcdir)/twin_demos
-twin_demos_xtwin_LDADD = twin_demos/libtwin_demos.a libtwin.la \
+twin_demos_xtwin_LDADD = twin_demos/libtwin_demos.a libtwin/libtwin.la \
 	@TWIN_DEP_LDFLAGS@
 
 twin_demos_ftwin_SOURCES = twin_demos/ftwin.c
 twin_demos_ftwin_CFLAGS = @TWIN_DEP_CFLAGS@ -I$(top_srcdir)/twin_demos
-twin_demos_ftwin_LDADD = twin_demos/libtwin_demos.a libtwin.la \
+twin_demos_ftwin_LDADD = twin_demos/libtwin_demos.a libtwin/libtwin.la \
 	@TWIN_DEP_LDFLAGS@
 
 twin_demos_libtwin_demos_a_CFLAGS = @WARN_CFLAGS@ -I$(top_srcdir)/twin_demos
@@ -94,6 +95,11 @@ twin_demos_libtwin_demos_a_SOURCES = \
 	twin_demos/twin_demospline.c twin_demos/twin_demospline.h \
 	twin_demos/twin_hello.c twin_demos/twin_hello.h \
 	twin_demos/twin_text.c twin_demos/twin_text.h
+
+# at the moment, the twin demos require twinint.h :(
+twin_demos_xtwin_CFLAGS += -I$(top_srcdir)/libtwin
+twin_demos_ftwin_CFLAGS += -I$(top_srcdir)/libtwin
+twin_demos_libtwin_demos_a_CFLAGS += -I$(top_srcdir)/libtwin
 
 # twin_ttf
 EXTRA_PROGRAMS += twin_ttf/twin_ttf

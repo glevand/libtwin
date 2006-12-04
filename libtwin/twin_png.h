@@ -21,7 +21,7 @@
 #ifndef _TWIN_PNG_H_
 #define _TWIN_PNG_H_
 
-#include "twin.h"
+#include <libtwin/twin.h>
 
 #include <png.h>
 

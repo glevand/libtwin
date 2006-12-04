@@ -21,7 +21,7 @@
 #ifndef _TWIN_FBDEV_H_
 #define _TWIN_FBDEV_H_
 
-#include "twin.h"
+#include <libtwin/twin.h>
 
 #include <termios.h>
 #include <linux/fb.h>

@@ -21,7 +21,7 @@
 #ifndef _TWIN_LINUX_MOUSE_H_
 #define _TWIN_LINUX_MOUSE_H_
 
-#include "twin.h"
+#include <libtwin/twin.h>
 
 typedef struct _twin_linux_mouse {
 	twin_screen_t   *screen;

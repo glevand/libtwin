@@ -22,7 +22,7 @@
 #ifndef _TWIN_X11_H_
 #define _TWIN_X11_H_
 
-#include "twin.h"
+#include <libtwin/twin.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

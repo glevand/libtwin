@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <twin_def.h>
 
 typedef uint8_t	    twin_a8_t;
 typedef uint16_t    twin_a16_t;
