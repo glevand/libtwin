@@ -694,3 +694,17 @@ twin_fill (twin_pixmap_t    *dst,
 	(*op) (twin_pixmap_pointer (dst, left, iy), src, right - left);
     twin_pixmap_damage (dst, left, top, right, bottom);
 }
+
+void
+_twin_draw_set_features(void)
+{
+#ifdef HAVE_ALTIVEC
+    if (twin_has_feature(TWIN_FEATURE_ALTIVEC)) {
+	    comp2[TWIN_SOURCE][TWIN_ARGB32][TWIN_ARGB32] =
+		    _twin_vec_argb32_source_argb32;
+	    comp2[TWIN_OVER][TWIN_ARGB32][TWIN_ARGB32] =
+		    _twin_vec_argb32_over_argb32;
+    }
+#endif /* HAVE_ALTIVEC */
+}
+

@@ -23,6 +23,7 @@
 #define _TWININT_H_
 
 #include "twin.h"
+#include "twin_def.h"
 #include <string.h>
 
 /*
@@ -275,6 +276,9 @@ twin_op_func _twin_rgb16_source_a8;
 twin_op_func _twin_a8_source_a8;
 twin_op_func _twin_c_source_a8;
 
+twin_op_func _twin_vec_argb32_over_argb32;
+twin_op_func _twin_vec_argb32_source_argb32;
+
 twin_argb32_t *
 _twin_fetch_rgb16 (twin_pixmap_t *pixmap, int x, int y, int w, twin_argb32_t *span);
 
@@ -360,6 +364,13 @@ _twin_path_scurve (twin_path_t	    *path,
 
 void
 _twin_path_sfinish (twin_path_t *path);
+
+/*
+ * Draw stuff
+ */
+
+void
+_twin_draw_set_features(void);
 
 /*
  * Glyph stuff.  Coordinates are stored in 2.6 fixed point format

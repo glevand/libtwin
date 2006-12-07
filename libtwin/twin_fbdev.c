@@ -41,6 +41,11 @@
 #include <linux/input.h>
 
 #include "twin_fbdev.h"
+#include "twinint.h"
+
+#ifdef HAVE_ALTIVEC
+#include <altivec.h>
+#endif
 
 #define _IMMEDIATE_REFRESH
 
@@ -75,6 +80,44 @@ static void _twin_fbdev_put_span (twin_coord_t    left,
 	while(width--)
 		*(dest++) = *(pixels++);
 }
+
+#ifdef HAVE_ALTIVEC
+static void _twin_fbdev_vec_put_span (twin_coord_t    left,
+				      twin_coord_t    top,
+				      twin_coord_t    right,
+				      twin_argb32_t   *pixels,
+				      void     	      *closure)
+{
+	twin_fbdev_t    	*tf = closure;
+	twin_coord_t    	width = right - left;
+	unsigned int		*dest;
+	vector unsigned char 	edgeperm;
+	vector unsigned char	src0v, src1v, srcv;
+
+	if (!tf->active || tf->fb_base == MAP_FAILED)
+		return;
+
+	dest = (unsigned int *)(tf->fb_ptr + top * tf->fb_fix.line_length);
+	dest += left;
+
+	while((((unsigned long)dest) & 0xf) && width--)
+		*(dest++) = *(pixels++);
+
+	edgeperm = vec_lvsl (0, pixels);
+	src0v = vec_ld (0, pixels);
+	while(width >= 4) {
+		src1v = vec_ld (16, pixels);
+		srcv = vec_perm (src0v, src1v, edgeperm);
+		vec_st ((vector unsigned int)srcv, 0, dest);
+		src0v = src1v;
+		dest += 4;
+		pixels += 4;
+		width -= 4;
+	}
+	while(width--)
+		*(dest++) = *(pixels++);
+}
+#endif /* HAVE_ALTIVEC */
 
 static twin_bool_t twin_fbdev_apply_config(twin_fbdev_t *tf)
 {
@@ -426,10 +469,17 @@ static twin_bool_t twin_fbdev_init_fb(twin_fbdev_t *tf)
 
 static twin_bool_t twin_fbdev_init_screen(twin_fbdev_t *tf)
 {
+	twin_put_span_t span;
+
+	span = _twin_fbdev_put_span;
+#ifdef HAVE_ALTIVEC
+	if (twin_has_feature(TWIN_FEATURE_ALTIVEC))
+		span = _twin_fbdev_vec_put_span;
+#endif
+
 	tf->screen = twin_screen_create(tf->fb_var.xres,
 					tf->fb_var.yres,
-					NULL,
-					_twin_fbdev_put_span, tf);
+					NULL, span, tf);
 	if (tf->screen == NULL) {
 		IERROR("can't create twin screen");
 		return 0;

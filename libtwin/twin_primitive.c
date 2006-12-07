@@ -263,5 +263,140 @@ make_twin_op_srcs(op,argb32) \
 make_twin_op_srcs(op,rgb16) \
 make_twin_op_srcs(op,a8)
 
-make_twin_op_dsts_srcs(over)
+make_twin_op_dsts_srcs(over);
 make_twin_op_dsts_srcs(source)
+
+#ifdef HAVE_ALTIVEC
+
+#include <altivec.h>
+
+#define VUNALIGNED(p)	(((unsigned long)(p)) & 0xf)
+
+
+/* Altivec over function, some bits inspired by SDL */
+static inline vector unsigned int over_v (vector unsigned char dst,
+					  vector unsigned char src
+					  )
+{
+    const vector unsigned char alphasplit =
+	    vec_and (vec_lvsl (0, (int *)NULL), vec_splat_u8(0x0c));
+    const vector unsigned char merge =
+	    vec_add(vec_lvsl(0, (int *)NULL),
+		    (vector unsigned char)vec_splat_u16(0x0f));
+    vector unsigned char alpha, alphainv;
+    vector unsigned short dmule, dmulo;
+    const vector unsigned short v80 = vec_sl(vec_splat_u16(1), vec_splat_u16(7));
+    const vector unsigned short v8= vec_splat_u8(8);
+
+    /* get source alpha values all over the vector */
+    alpha = vec_perm(src, src, alphasplit);
+
+    /* invert alpha */
+    alphainv = vec_nor(alpha, alpha);
+
+    /* multiply destination values with inverse alpha into 2 u16 vectors */
+    dmule = vec_mule(dst, alphainv);
+    dmulo = vec_mulo(dst, alphainv);
+
+    /* round and merge back */
+    dmule = vec_add(dmule, v80);
+    dmulo = vec_add(dmulo, v80);
+    dmule = vec_add(dmule, vec_sr(dmule, v8));
+    dmulo = vec_add(dmulo, vec_sr(dmulo, v8));
+    dst = vec_perm(dmule, dmulo, merge);
+
+    /* return added value */
+    return vec_adds(dst, src);
+}
+
+void _twin_vec_argb32_over_argb32 (twin_pointer_t 	dst,
+				   twin_source_u	src,
+				   int			width)
+{
+    twin_argb32_t   		dst32;
+    twin_argb32_t   		src32;
+    vector unsigned char 	edgeperm;
+    vector unsigned char	src0v, src1v, srcv, dstv;
+    
+
+    /* Go scalar for small amounts as I can't be bothered */
+    if (width <  8) {
+	    _twin_argb32_over_argb32(dst, src, width);
+	    return;
+    }
+
+    /* first run scalar until destination is aligned */
+    while (VUNALIGNED(dst.v) && width--) {
+	    dst32 = dst_argb32_get;
+	    src32 = src_argb32;
+	    dst32 = over (dst32, src32);
+	    dst_argb32_set (dst32);
+    }
+
+    /* maybe we should have a special "aligned" version to avoid those
+     * permutations...
+     */
+    edgeperm = vec_lvsl (0, src.p.argb32);
+    src0v = vec_ld (0, src.p.argb32);
+    while(width >= 4) {
+	    dstv = vec_ld (0, dst.argb32);
+	    src1v = vec_ld (16, src.p.argb32);
+	    srcv = vec_perm (src0v, src1v, edgeperm);
+	    dstv = over_v (dstv, srcv);
+	    vec_st ((vector unsigned int)dstv, 0, dst.argb32);
+	    src.p.argb32 += 4;
+	    dst.argb32 += 4;
+	    src0v = src1v;
+	    width -= 4;
+    }
+
+    /* then run scalar again for remaining bits */
+    while (width--) {
+	    dst32 = dst_argb32_get;
+	    src32 = src_argb32;
+	    dst32 = over (dst32, src32);
+	    dst_argb32_set (dst32);
+    }
+}
+
+void _twin_vec_argb32_source_argb32 (twin_pointer_t	dst,
+				     twin_source_u	src,
+				     int	    	width)
+{
+    twin_argb32_t   		dst32;
+    twin_argb32_t   		src32;
+    vector unsigned char 	edgeperm;
+    vector unsigned char	src0v, src1v, srcv;
+    
+
+    /* first run scalar until destination is aligned */
+    while (VUNALIGNED(dst.v) && width--) {
+	    src32 = src_argb32;
+	    dst32 = src32;
+	    dst_argb32_set (dst32);
+    }
+
+    /* maybe we should have a special "aligned" version to avoid those
+     * permutations...
+     */
+    edgeperm = vec_lvsl (0, src.p.argb32);
+    src0v = vec_ld (0, src.p.argb32);
+    while(width >= 4) {
+	    src1v = vec_ld (16, src.p.argb32);
+	    srcv = vec_perm (src0v, src1v, edgeperm);
+	    vec_st ((vector unsigned int)srcv, 0, dst.argb32);
+	    src.p.argb32 += 4;
+	    dst.argb32 += 4;
+	    src0v = src1v;
+	    width -= 4;
+    }
+
+    /* then run scalar again for remaining bits */
+    while (width--) {
+	    src32 = src_argb32;
+	    dst32 = src32;
+	    dst_argb32_set (dst32);
+    }
+}
+
+#endif /* HAVE_ALTIVEC */

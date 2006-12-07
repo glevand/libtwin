@@ -143,11 +143,12 @@ twin_screen_damaged (twin_screen_t *screen)
 static void
 twin_screen_span_pixmap(twin_screen_t *screen, twin_argb32_t *span,
 			twin_pixmap_t *p, twin_coord_t y,
-			twin_coord_t left, twin_coord_t right)
+			twin_coord_t left, twin_coord_t right,
+			twin_src_op op16, twin_src_op op32)
 {
     twin_pointer_t  dst;
-    twin_source_u	src;
-    twin_coord_t	p_left, p_right;
+    twin_source_u   src;
+    twin_coord_t    p_left, p_right;
 		
     /* bounds check in y */
     if (y < p->y)
@@ -166,9 +167,9 @@ twin_screen_span_pixmap(twin_screen_t *screen, twin_argb32_t *span,
     dst.argb32 = span + (p_left - left);
     src.p = twin_pixmap_pointer (p, p_left - p->x, y - p->y);
     if (p->format == TWIN_RGB16)
-	_twin_rgb16_source_argb32 (dst, src, p_right - p_left);
+	op16 (dst, src, p_right - p_left);
     else
-	_twin_argb32_over_argb32 (dst, src, p_right - p_left);
+	op32 (dst, src, p_right - p_left);
 }
 
 void
@@ -178,7 +179,19 @@ twin_screen_update (twin_screen_t *screen)
     twin_coord_t	top = screen->damage.top;
     twin_coord_t	right = screen->damage.right;
     twin_coord_t	bottom = screen->damage.bottom;
-    
+    twin_src_op		pop16, pop32, bop32;
+
+    pop16 = _twin_rgb16_source_argb32;
+    pop32 = _twin_argb32_over_argb32;
+    bop32 = _twin_argb32_source_argb32;
+
+#ifdef HAVE_ALTIVEC
+    if (twin_has_feature(TWIN_FEATURE_ALTIVEC)) {
+	pop32 = _twin_vec_argb32_over_argb32;
+	bop32 = _twin_vec_argb32_source_argb32;
+    }
+#endif
+
     if (right > screen->width)
 	right = screen->width;
     if (bottom > screen->height)
@@ -221,18 +234,19 @@ twin_screen_update (twin_screen_t *screen)
 			p_this = right - p_left;
 		    src.p = twin_pixmap_pointer (screen->background,
 						 m_left, p_y);
-		    _twin_argb32_source_argb32 (dst, src, p_this);
+		    bop32 (dst, src, p_this);
 		}
 	    }
 	    else
 		memset (span, 0xff, width * sizeof (twin_argb32_t));
 
 	    for (p = screen->bottom; p; p = p->up)
-		twin_screen_span_pixmap(screen, span, p, y, left, right);
+		twin_screen_span_pixmap(screen, span, p, y, left, right,
+					pop16, pop32);
 
 	    if (screen->cursor)
 		twin_screen_span_pixmap(screen, span, screen->cursor,
-					y, left, right);
+					y, left, right, pop16, pop32);
 
 	    (*screen->put_span) (left, y, right, span, screen->closure);
 	}

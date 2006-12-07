@@ -41,7 +41,11 @@ int
 main (int argc, char **argv)
 {
     Display	    *dpy = XOpenDisplay (0);
-    twin_x11_t	    *x11 = twin_x11_create (dpy, WIDTH, HEIGHT);
+    twin_x11_t	    *x11;
+
+    twin_feature_init();
+
+    x11 = twin_x11_create (dpy, WIDTH, HEIGHT);
 
     twin_screen_set_background (x11->screen, twin_make_pattern ());
 #if 0

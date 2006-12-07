@@ -48,6 +48,16 @@ typedef enum { TWIN_A8, TWIN_RGB16, TWIN_ARGB32 } twin_format_t;
 #define twin_bytes_per_pixel(format)    (1 << (twin_coord_t) (format))
 
 /*
+ * Features
+ */
+
+#define TWIN_FEATURE_ALTIVEC	0x00000001
+
+void twin_feature_init(void);
+int twin_has_feature(unsigned int feature);
+
+
+/*
  * Angles
  */
 typedef int16_t	    twin_angle_t;   /* -2048 .. 2048 for -180 .. 180 */

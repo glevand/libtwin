@@ -60,6 +60,8 @@ int main (int argc, char **argv)
 	int hx, hy;
 	twin_pixmap_t *cur;
 
+	twin_feature_init();
+
 	tf = twin_fbdev_create(-1, SIGUSR1);
 	if (tf == NULL)
 		return 1;

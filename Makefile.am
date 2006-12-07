@@ -14,6 +14,7 @@ libtwin_libtwin_la_SOURCES = \
 	libtwin/twin_cursor.c \
 	libtwin/twin_dispatch.c \
 	libtwin/twin_draw.c \
+	libtwin/twin_feature.c \
 	libtwin/twin_hull.c \
 	libtwin/twin_icon.c \
 	libtwin/twin_file.c \
