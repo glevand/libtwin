@@ -107,6 +107,37 @@ fi
 AC_SUBST(FREETYPE_LIBS)
 AC_SUBST(FREETYPE_CFLAGS)
 
+# Altivec support
+AC_ARG_ENABLE(altivec,
+	AC_HELP_STRING([--enable-altivec],
+		[Enable altivec support (default=detect)]),
+	twin_altivec="$enableval")
+
+if test x$twin_altivec = x
+then
+	AC_MSG_CHECKING([for altivec support])
+	CFLAGS_save="$CFLAGS"
+	CFLAGS="$CFLAGS -maltivec"
+	AC_TRY_COMPILE([#include <altivec.h>],
+		[vector unsigned int v = vec_splat_u32(0)],
+		twin_altivec=yes,
+		twin_altivec=no)
+	CFLAGS="$CFLAGS_save"
+	AC_MSG_RESULT($twin_altivec)
+fi
+
+ALTIVEC_CFLAGS=""
+AH_TEMPLATE(HAVE_ALTIVEC,
+	[Define if the C compiler supports altivec extensions])
+
+if test x$twin_altivec = xyes
+then
+	AC_DEFINE([HAVE_ALTIVEC])
+	ALTIVEC_CFLAGS="-maltivec"
+fi
+AC_SUBST(ALTIVEC_CFLAGS)
+
+
 # TWIN_DEP_*FLAGS define all flags required by dependencies of libtwin
 TWIN_DEP_LDFLAGS="$X_LIBS $PNG_LIBS -lm"
 TWIN_DEPCFLAGS="$X_CFLAGS $PNG_CFLAGS"
@@ -124,6 +155,7 @@ AC_MSG_NOTICE([fbdev support:  $twin_fb])
 AC_MSG_NOTICE([png support:    $twin_png])
 AC_MSG_NOTICE([twin_ttf tool:  $twin_ttf])
 AC_MSG_NOTICE([linux mouse:    $twin_mouse])
+AC_MSG_NOTICE([altivec:        $twin_altivec])
 
 AC_OUTPUT([Makefile
            libtwin.pc])
