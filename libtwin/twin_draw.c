@@ -641,6 +641,30 @@ void twin_composite (twin_pixmap_t	*dst,
 			       operator, width, height);
 }
 
+void twin_premultiply_alpha(twin_pixmap_t *px)
+{
+    int x, y;
+    twin_pointer_t p;
+    uint16_t t1, t2, t3;
+
+    if (px->format != TWIN_ARGB32)
+	return;
+
+    for (y = 0; y < px->height; y++) {
+	p.b = px->p.b + y * px->stride;
+
+	for (x = 0; x < px->width; x++) {
+	    twin_argb32_t v = p.argb32[x];
+	    twin_a8_t a = twin_get_8(v, 24);
+
+	    p.argb32[x] = (v & 0xff000000) |
+		twin_int_mult(twin_get_8(v, 16), a, t1) << 16 |
+		twin_int_mult(twin_get_8(v, 8), a, t2) << 8 |
+		twin_int_mult(twin_get_8(v, 0), a, t3);
+	}
+    }
+}
+
 /*
  * array primary    index is OVER SOURCE
  * array secondary  index is ARGB32 RGB16 A8

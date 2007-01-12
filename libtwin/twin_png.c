@@ -172,6 +172,9 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 
 	png_read_end(png, NULL);
 
+	if (fmt == TWIN_ARGB32)
+		twin_premultiply_alpha(pix);
+
  fail_free:
 	if (rowp)
 		free(rowp);

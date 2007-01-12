@@ -647,6 +647,8 @@ twin_fill (twin_pixmap_t    *dst,
 	   twin_coord_t	    right,
 	   twin_coord_t	    bottom);
 
+void
+twin_premultiply_alpha (twin_pixmap_t *px);
 /*
  * twin_cursor.c
  */
