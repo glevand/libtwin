@@ -156,19 +156,20 @@ static void _twin_text_compute_info (twin_path_t	*path,
 	info->scale.x = path->state.font_size;
 	info->scale.y = path->state.font_size;
 	
-	if (font->type != TWIN_FONT_TYPE_STROKE)
+	if (font->type != TWIN_FONT_TYPE_STROKE) {
 	    info->pen.x = info->pen.y = 0;
-	else {
+	    info->margin.x = info->margin.y = 0;
+	} else {
 	    if (path->state.font_style & TWIN_TEXT_BOLD)
 		info->pen.x = path->state.font_size / 16;
 	    else
 		info->pen.x = path->state.font_size / 24;
 	    info->pen.y = info->pen.x;
+	    info->margin.x = path->state.font_size / 24;
+	    info->margin.y = info->margin.x;
+	
 	}
 
-	info->margin.x = path->state.font_size / 24;
-	info->margin.y = info->margin.x;
-	
 	info->pen_matrix = path->state.matrix;
 	twin_matrix_translate (&info->matrix,
 			       info->margin.x + info->pen.x, -info->pen.y);
@@ -297,6 +298,9 @@ static twin_fixed_t _twin_glyph_width (twin_text_info_t	 *info,
 	
     right_side_bearing = right + info->margin.x;
     width = right_side_bearing + info->margin.x;
+
+    DBGMSG(("gw: g_right=%d right=%f, rsb=%f, margin_x=%f, width=%f\n",
+	   twin_glyph_right(b), F(right), F(right_side_bearing), F(info->margin.x), F(width)));
     return width;
 }
 
