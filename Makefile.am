@@ -38,8 +38,8 @@ libtwin_libtwin_la_SOURCES = \
 	libtwin/twin_widget.c \
 	libtwin/twin_window.c \
 	libtwin/twin_work.c \
-	libtwin/twin_def.h \
-	libtwin/twinint.h
+	libtwin/twinint.h \
+	twin_def.h
 
 if TWIN_X11
 pkginclude_HEADERS += libtwin/twin_x11.h
