@@ -228,7 +228,7 @@ static int convert_font (char *in_name, int id)
     min_ucs4 = 0xffffff;
     max_ucs4 = 0;
     printf ("/* Derived from %s */\n\n", in_name);
-    printf ("#include \"twin.h\"\n\n");
+    printf ("#include <libtwin/twin.h>\n\n");
     printf ("static const signed char outlines[] = {\n");
     for (ucs4 = FT_Get_First_Char (face, &gindex); 
 	 gindex != 0 && ucs4 < MAX_UCS4;
