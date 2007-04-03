@@ -91,8 +91,25 @@ if test "x$twin_png" = "xyes"
 then
 	PKG_CHECK_MODULES(PNG, libpng12, twin_png="yes", twin_png="no")
 fi
+
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
+
+# jpeg support
+AC_ARG_ENABLE(jpeg,
+	AC_HELP_STRING([--disable-jpeg],
+		[Disable jpeg support (default=enabled)]),
+	twin_jpeg="$enableval", twin_jpeg="yes")
+
+if test "x$twin_jpeg" = "xyes"
+then
+        AC_CHECK_HEADER(jpeglib.h, twin_jpeg="yes", twin_jpeg="no")
+fi
+
+if test "x$twin_jpeg" = "xyes"
+then
+	JPEG_LIBS=-ljpeg
+fi
 
 # Check for freetype
 AC_ARG_ENABLE(twin-ttf,
@@ -139,7 +156,7 @@ AC_SUBST(ALTIVEC_CFLAGS)
 
 
 # TWIN_DEP_*FLAGS define all flags required by dependencies of libtwin
-TWIN_DEP_LDFLAGS="$X_LIBS $PNG_LIBS -lm"
+TWIN_DEP_LDFLAGS="$X_LIBS $PNG_LIBS $JPEG_LIBS -lm"
 TWIN_DEPCFLAGS="$X_CFLAGS $PNG_CFLAGS"
 AC_SUBST(TWIN_DEP_CFLAGS)
 AC_SUBST(TWIN_DEP_LDFLAGS)
@@ -147,12 +164,14 @@ AC_SUBST(TWIN_DEP_LDFLAGS)
 AM_CONDITIONAL(TWIN_X11, test x$twin_x11 = xyes)
 AM_CONDITIONAL(TWIN_FB, test x$twin_fb = xyes)
 AM_CONDITIONAL(TWIN_PNG, test x$twin_png = xyes)
+AM_CONDITIONAL(TWIN_JPEG, test x$twin_jpeg = xyes)
 AM_CONDITIONAL(TWIN_TTF, test x$twin_ttf = xyes)
 AM_CONDITIONAL(TWIN_MOUSE, test x$twin_mouse = xyes)
 
 AC_MSG_NOTICE([x11 support:    $twin_x11])
 AC_MSG_NOTICE([fbdev support:  $twin_fb])
 AC_MSG_NOTICE([png support:    $twin_png])
+AC_MSG_NOTICE([jpeg support:   $twin_jpeg])
 AC_MSG_NOTICE([twin_ttf tool:  $twin_ttf])
 AC_MSG_NOTICE([linux mouse:    $twin_mouse])
 AC_MSG_NOTICE([altivec:        $twin_altivec])

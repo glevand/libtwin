@@ -61,6 +61,11 @@ pkginclude_HEADERS += libtwin/twin_png.h
 libtwin_libtwin_la_SOURCES += libtwin/twin_png.c
 endif
 
+if TWIN_JPEG
+pkginclude_HEADERS += libtwin/twin_jpeg.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_jpeg.c
+endif
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libtwin.pc
 
