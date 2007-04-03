@@ -23,6 +23,24 @@
 
 #include <libtwin/twin.h>
 
+/* This matches the libjpeg colorspace definitions so you don't have
+ * to use libjpeg headers in your application
+ */
+typedef enum {
+	TWIN_JCS_UNKNOWN,	/* error/unspecified */
+	TWIN_JCS_GRAYSCALE,	/* monochrome */
+	TWIN_JCS_RGB,		/* red/green/blue */
+	TWIN_JCS_YCbCr,		/* Y/Cb/Cr (also known as YUV) */
+	TWIN_JCS_CMYK,		/* C/M/Y/K */
+	TWIN_JCS_YCCK		/* Y/Cb/Cr/K */
+} twin_jpeg_cspace_t;
+
+twin_bool_t twin_jpeg_query(const char		*filepath,
+			    twin_coord_t	*out_width,
+			    twin_coord_t	*out_height,
+			    int			*out_components,
+			    twin_jpeg_cspace_t	*out_colorspace);
+
 twin_pixmap_t *twin_jpeg_to_pixmap(const char *filepath, twin_format_t fmt);
 
 #endif /* _TWIN_JPEG_H_ */

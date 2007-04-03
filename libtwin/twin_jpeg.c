@@ -167,3 +167,51 @@ twin_pixmap_t *twin_jpeg_to_pixmap(const char *filepath, twin_format_t fmt)
 	return pix;
 }
 
+
+twin_bool_t twin_jpeg_query(const char		*filepath,
+			    twin_coord_t	*out_width,
+			    twin_coord_t	*out_height,
+			    int			*out_components,
+			    twin_jpeg_cspace_t	*out_colorspace)
+{
+	struct jpeg_decompress_struct	cinfo;
+	struct twin_jpeg_err_mgr	jerr;
+	FILE				*infile;
+
+	/* Open file first, as example */
+	infile = fopen(filepath, "rb");
+	if (infile == NULL) {
+		fprintf(stderr, "can't open %s\n", filepath);
+		return TWIN_FALSE;
+	}
+
+	/* Error handling crap */
+	memset(&cinfo, 0, sizeof(cinfo));
+	cinfo.err = jpeg_std_error(&jerr.mgr);
+	jerr.mgr.error_exit = twin_jpeg_error_exit;
+	if (setjmp(jerr.jbuf)) {
+		jpeg_destroy_decompress(&cinfo);
+		fclose(infile);
+		return TWIN_FALSE;
+	}
+
+	/* Init libjpeg, hook it up to file and read header */
+	jpeg_create_decompress(&cinfo);
+	jpeg_stdio_src(&cinfo, infile);
+	(void)jpeg_read_header(&cinfo, TRUE);
+
+	/* Gather infos */
+	if (out_width)
+		*out_width	= cinfo.image_width;
+	if (out_height)
+		*out_height	= cinfo.image_height;
+	if (out_components)
+		*out_components	= cinfo.num_components;
+	if (out_colorspace)
+		*out_colorspace	= (twin_jpeg_cspace_t)cinfo.jpeg_color_space;
+
+	jpeg_destroy_decompress(&cinfo);
+	fclose(infile);
+
+	return TWIN_TRUE;
+}
