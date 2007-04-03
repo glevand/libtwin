@@ -33,12 +33,11 @@
 
 #include "twin_jpeg.h"
 
-
 #if BITS_IN_JSAMPLE != 8
 #error supports only libjpeg with 8 bits per sample
 #endif
 
-#if 1
+#if 0
 #define DEBUG(fmt...)	printf(fmt)
 #else
 #define DEBUG(fmt...)
