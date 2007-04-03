@@ -23,8 +23,6 @@
 
 #include <libtwin/twin.h>
 
-#include <png.h>
-
 twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt);
 
 #endif /* _TWIN_PNG_H_ */
