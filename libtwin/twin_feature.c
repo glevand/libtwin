@@ -55,7 +55,7 @@ static int _twin_have_altivec(void)
 }
 
 #else
-#define _twin_have_altivec()
+#define _twin_have_altivec() (0)
 #endif /* HAVE_ALTIVEC */
 
 int twin_has_feature(unsigned int feature)
