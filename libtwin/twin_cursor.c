@@ -19,6 +19,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <twin_def.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -30,6 +32,23 @@
 #include <fcntl.h>
 #include <byteswap.h>
 #include <endian.h>
+
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+
+#define fdtype gzFile
+#define cursor_open(file) gzopen(file, "rb")
+#define cursor_read gzread
+#define cursor_seek gzseek
+#define cursor_close gzclose
+
+#else
+#define fdtype int
+#define cursor_open(file) open(file, O_RDONLY)
+#define cursor_read read
+#define cursor_seek lseek
+#define cursor_close close
+#endif
 
 #include "twin.h"
 
@@ -138,11 +157,11 @@ twin_pixmap_t *twin_get_default_cursor(int *hx, int *hy)
 #define XCURSOR_IMAGE_HEADER_LEN    (XCURSOR_CHUNK_HEADER_LEN + (5*4))
 #define XCURSOR_IMAGE_MAX_SIZE      0x7fff      /* 32767x32767 max cursor size */
 
-static inline int twin_read_header(int fd, uint32_t *buf, int size)
+static inline int twin_read_header(fdtype fd, uint32_t *buf, int size)
 {
 	int i, len;
 
-	len = read(fd, buf, size);
+	len = cursor_read(fd, buf, size);
 	if (len != size)
 		return 0;
 
@@ -156,11 +175,12 @@ static inline int twin_read_header(int fd, uint32_t *buf, int size)
 twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 				  int *hx, int *hy)
 {
-	int		fd, img, i, toccnt;
+	fdtype		fd;
+	int		img, i, toccnt;
 	uint32_t	buffer[32], filepos, size;
 	twin_pixmap_t	*cur = NULL;	
 
-	fd = open(file, O_RDONLY);
+	fd = cursor_open(file);
 	if (fd < 0)
 		return NULL;
 	if (!twin_read_header(fd, buffer, XCURSOR_FILE_HEADER_LEN))
@@ -178,7 +198,7 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 	toccnt = buffer[3];
 
 	/* seek to first toc entry (header len) */
-	lseek(fd, buffer[1] , SEEK_SET);
+	cursor_seek(fd, buffer[1] , SEEK_SET);
 
 	/* look for the index'th image in TOC */
 	img = 0;
@@ -197,7 +217,7 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 		goto bail;
 
 	/* seek to image header and read it */
-	lseek(fd, filepos, SEEK_SET);
+	cursor_seek(fd, filepos, SEEK_SET);
 	if (!twin_read_header(fd, buffer, XCURSOR_IMAGE_HEADER_LEN))
 		goto bail;
 
@@ -220,8 +240,8 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 
 	/* load pixels */
 	size = buffer[4] * buffer[5] * 4;
-	lseek(fd, filepos + buffer[0], SEEK_SET);
-	if (read(fd, cur->p.v, size) != size) {
+	cursor_seek(fd, filepos + buffer[0], SEEK_SET);
+	if (cursor_read(fd, cur->p.v, size) != size) {
 		twin_pixmap_destroy(cur);
 		goto bail;
 	}
@@ -232,7 +252,7 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 #endif
 
  bail:
-	close(fd);
+	cursor_close(fd);
 	return cur;
 }
 

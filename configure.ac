@@ -81,6 +81,24 @@ AC_ARG_ENABLE(linux-mouse,
 		[Disable linux mouse support (default=enabled)]),
 	twin_mouse="$enableval", twin_mouse="yes")
 
+# zlib
+AC_ARG_ENABLE(zlib,
+	AC_HELP_STRING([--disable-zlib],
+		[Disable zlib support (default=enabled)]),
+	twin_zlib="$enableval", twin_zlib="yes")
+AH_TEMPLATE(HAVE_ZLIB, [Define if the zlib compression library is available])
+
+if test "x$twin_zlib" = "zlib"
+then
+        AC_CHECK_HEADER(zlib.h, twin_zlib="yes", twin_zlib="no")
+fi
+
+if test "x$twin_zlib" = "xyes"
+then
+	Z_LIBS=-lz
+	AC_DEFINE([HAVE_ZLIB])
+fi
+
 # png support
 AC_ARG_ENABLE(png,
 	AC_HELP_STRING([--disable-png],
@@ -156,13 +174,14 @@ AC_SUBST(ALTIVEC_CFLAGS)
 
 
 # TWIN_DEP_*FLAGS define all flags required by dependencies of libtwin
-TWIN_DEP_LDFLAGS="$X_LIBS $PNG_LIBS $JPEG_LIBS -lm"
+TWIN_DEP_LDFLAGS="$X_LIBS $PNG_LIBS $JPEG_LIBS $Z_LIBS -lm"
 TWIN_DEPCFLAGS="$X_CFLAGS $PNG_CFLAGS"
 AC_SUBST(TWIN_DEP_CFLAGS)
 AC_SUBST(TWIN_DEP_LDFLAGS)
 
 AM_CONDITIONAL(TWIN_X11, test x$twin_x11 = xyes)
 AM_CONDITIONAL(TWIN_FB, test x$twin_fb = xyes)
+AM_CONDITIONAL(TWIN_ZLIB, test x$twin_zlib = xyes)
 AM_CONDITIONAL(TWIN_PNG, test x$twin_png = xyes)
 AM_CONDITIONAL(TWIN_JPEG, test x$twin_jpeg = xyes)
 AM_CONDITIONAL(TWIN_TTF, test x$twin_ttf = xyes)
@@ -170,6 +189,7 @@ AM_CONDITIONAL(TWIN_MOUSE, test x$twin_mouse = xyes)
 
 AC_MSG_NOTICE([x11 support:    $twin_x11])
 AC_MSG_NOTICE([fbdev support:  $twin_fb])
+AC_MSG_NOTICE([zlib support:   $twin_zlib])
 AC_MSG_NOTICE([png support:    $twin_png])
 AC_MSG_NOTICE([jpeg support:   $twin_jpeg])
 AC_MSG_NOTICE([twin_ttf tool:  $twin_ttf])
