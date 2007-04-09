@@ -27,9 +27,9 @@ typedef struct _twin_linux_mouse {
 	twin_screen_t   *screen;
 
 	/* acceleration settings */
-	int		acc_num;
-	int		acc_den;
-	int		acc_threshold;
+	twin_fixed_t	acc_num;
+	twin_fixed_t	acc_den;
+	twin_fixed_t	acc_threshold;
 
 	/* internals */
 	int		fd;

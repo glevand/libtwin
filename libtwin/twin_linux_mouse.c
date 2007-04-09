@@ -32,9 +32,9 @@
 #include "twin_linux_mouse.h"
 
 #define QUADRATIC_ACCELERATION		1
-#define DEFAULT_ACC_NUMERATOR   	2
-#define DEFAULT_ACC_DENOMINATOR 	1
-#define DEFAULT_ACC_THRESHOLD   	4
+#define DEFAULT_ACC_NUMERATOR   	(2*TWIN_FIXED_ONE)
+#define DEFAULT_ACC_DENOMINATOR 	TWIN_FIXED_ONE
+#define DEFAULT_ACC_THRESHOLD   	(4*TWIN_FIXED_ONE)
 
 static void twin_linux_mouse_check_bounds(twin_linux_mouse_t *tm)
 {
@@ -51,10 +51,12 @@ static void twin_linux_mouse_check_bounds(twin_linux_mouse_t *tm)
 /* This is directly copied from kdrive */
 static void twin_linux_mouse_accel(twin_linux_mouse_t *tm, int *dx, int *dy)
 {
-	double  speed = sqrt (*dx * *dx + *dy * *dy);
-	double  accel;
+	int square = *dx * *dx + *dy * *dy;
+	twin_fixed_t speed = square>65535 ? twin_int_to_fixed(256) : 
+			     twin_fixed_sqrt(twin_int_to_fixed(square));
+	twin_fixed_t accel;
 #ifdef QUADRATIC_ACCELERATION
-	double  m;
+	twin_fixed_t m;
 
 	/*
 	 * Ok, so we want it moving num/den times faster at threshold*2
@@ -67,16 +69,17 @@ static void twin_linux_mouse_accel(twin_linux_mouse_t *tm, int *dx, int *dy)
 	 * num / den - 1 = m * threshold * 2
 	 * (num / den - 1) / threshold * 2 = m
 	 */
-	m = (((double) tm->acc_num / (double) tm->acc_den - 1.0) / 
-	     ((double) tm->acc_threshold * 2.0));
-	accel = m * speed + 1;
+	m = twin_fixed_div(tm->acc_num, tm->acc_den - TWIN_FIXED_ONE);
+	m = twin_fixed_div(m, (2*tm->acc_threshold));
+	accel = twin_fixed_mul(m, speed + TWIN_FIXED_ONE);
 #else
-	accel = 1.0;
+	accel = TWIN_FIXED_ONE;
+
 	if (speed > tm->acc_threshold)
-		accel = (double) tm->acc_num / tm->acc_den;
+		accel = twin_fixed_div(tm->acc_num, tm->acc_den);
 #endif
-	*dx = accel * *dx;
-	*dy = accel * *dy;
+	*dx = twin_fixed_to_int(twin_fixed_mul(accel, twin_int_to_fixed(*dx)));
+	*dy = twin_fixed_to_int(twin_fixed_mul(accel, twin_int_to_fixed(*dy)));
 }
 
 static twin_bool_t twin_linux_mouse_events(int file, twin_file_op_t ops,
@@ -146,7 +149,7 @@ twin_linux_mouse_t *twin_linux_mouse_create(const char *file,
 	tm->screen = screen;
 	tm->acc_num = DEFAULT_ACC_NUMERATOR;
 	tm->acc_den = DEFAULT_ACC_DENOMINATOR;
-	tm->acc_threshold =DEFAULT_ACC_THRESHOLD;
+	tm->acc_threshold = DEFAULT_ACC_THRESHOLD;
 	tm->x = screen->width / 2; 
 	tm->y = screen->height / 2; 
 	tm->fd = open(file, O_RDONLY);
@@ -187,7 +190,7 @@ void twin_linux_mouse_screen_changed(twin_linux_mouse_t *tm)
 void twin_linux_mouse_set_accel(twin_linux_mouse_t *tm,
 				int num, int den, int threshold)
 {
-	tm->acc_num = num;
-	tm->acc_den = den;
-	tm->acc_threshold = threshold;
+	tm->acc_num = twin_int_to_fixed(num);
+	tm->acc_den = twin_int_to_fixed(den);
+	tm->acc_threshold = twin_int_to_fixed(threshold);
 }
