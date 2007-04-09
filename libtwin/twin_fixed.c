@@ -109,6 +109,10 @@ twin_fixed_sqrt (twin_fixed_t a)
     while (max > min)
     {
 	mid = (max + min) >> 1;
+	if (mid >= 181*TWIN_FIXED_ONE) {
+		max = mid - 1;
+		continue;
+	}
 	sqr = twin_fixed_mul (mid, mid);
 	if (sqr == a)
 	    return mid;
