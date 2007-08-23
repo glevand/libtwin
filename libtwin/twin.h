@@ -35,6 +35,8 @@ typedef int16_t	    twin_coord_t;
 typedef int16_t	    twin_style_t;
 typedef int16_t	    twin_count_t;
 typedef int16_t	    twin_keysym_t;
+typedef uint8_t	    twin_js_number_t;
+typedef int16_t	    twin_js_value_t;
 typedef int32_t	    twin_area_t;
 typedef int32_t	    twin_time_t;
 typedef int16_t	    twin_stretch_t;
@@ -120,6 +122,10 @@ typedef enum _twin_event_kind {
     TwinEventActivate		= 0x0201,
     TwinEventDeactivate		= 0x0202,
 
+    /* Joystick */
+    TwinEventJoyButton		= 0x0401,
+    TwinEventJoyAxis		= 0x0402,
+
     /* Widgets */
     TwinEventPaint		= 0x1001,
     TwinEventQueryGeometry	= 0x1002,
@@ -138,6 +144,10 @@ typedef struct _twin_event {
 	struct {
 	    twin_keysym_t   key;
 	} key;
+	struct {
+	    twin_js_number_t control;
+	    twin_js_value_t  value;
+	} js;
 	struct {
 	    twin_ucs4_t	    ucs4;
 	} ucs4;

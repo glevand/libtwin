@@ -56,6 +56,11 @@ pkginclude_HEADERS += libtwin/twin_linux_mouse.h
 libtwin_libtwin_la_SOURCES += libtwin/twin_linux_mouse.c
 endif
 
+if TWIN_JOYSTICK
+pkginclude_HEADERS += libtwin/twin_linux_js.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_linux_js.c
+endif
+
 if TWIN_PNG
 pkginclude_HEADERS += libtwin/twin_png.h
 libtwin_libtwin_la_SOURCES += libtwin/twin_png.c

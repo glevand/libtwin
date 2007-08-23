@@ -81,6 +81,12 @@ AC_ARG_ENABLE(linux-mouse,
 		[Disable linux mouse support (default=enabled)]),
 	twin_mouse="$enableval", twin_mouse="yes")
 
+# linux joystick
+AC_ARG_ENABLE(linux-joystick,
+	AC_HELP_STRING([--disable-linux-joystick],
+		[Disable linux joystick support (default=enabled)]),
+	twin_joystick="$enableval", twin_joystick="yes")
+
 # zlib
 AC_ARG_ENABLE(zlib,
 	AC_HELP_STRING([--disable-zlib],
@@ -186,6 +192,7 @@ AM_CONDITIONAL(TWIN_PNG, test x$twin_png = xyes)
 AM_CONDITIONAL(TWIN_JPEG, test x$twin_jpeg = xyes)
 AM_CONDITIONAL(TWIN_TTF, test x$twin_ttf = xyes)
 AM_CONDITIONAL(TWIN_MOUSE, test x$twin_mouse = xyes)
+AM_CONDITIONAL(TWIN_JOYSTICK, test x$twin_joystick = xyes)
 
 AC_MSG_NOTICE([x11 support:    $twin_x11])
 AC_MSG_NOTICE([fbdev support:  $twin_fb])
@@ -194,6 +201,7 @@ AC_MSG_NOTICE([png support:    $twin_png])
 AC_MSG_NOTICE([jpeg support:   $twin_jpeg])
 AC_MSG_NOTICE([twin_ttf tool:  $twin_ttf])
 AC_MSG_NOTICE([linux mouse:    $twin_mouse])
+AC_MSG_NOTICE([linux joystick: $twin_joystick])
 AC_MSG_NOTICE([altivec:        $twin_altivec])
 
 AC_OUTPUT([Makefile
