@@ -291,7 +291,7 @@ static twin_bool_t twin_fbdev_read_events(int file, twin_file_op_t ops,
 	for (i = 0; i < count; i++) {
 		unsigned char e = events[i];
 
-		down = !!(e & 0x80);
+		down = !(e & 0x80);
 		e &= 0x7f;
 
 		/* XXX Handle special keys (make more configurable) */
