@@ -23,7 +23,7 @@ dnl Process this file with autoconf to create configure.
 
 AC_PREREQ([2.57])
 
-AC_INIT(libtwin, 0.0.2, [keithp@keithp.com], libtwin)
+AC_INIT(libtwin, 0.0.3, [keithp@keithp.com], libtwin)
 AC_CONFIG_AUX_DIR(.)
 AM_INIT_AUTOMAKE()
 AM_MAINTAINER_MODE
