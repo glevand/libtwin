@@ -108,6 +108,13 @@ twin_x11_read_events (int		file,
 			TwinEventButtonDown : TwinEventButtonUp);
 	    twin_screen_dispatch (tx->screen, &tev);
 	    break;
+	case KeyPress:
+	case KeyRelease:
+	    tev.u.key.key = XLookupKeysym(&ev.xkey, 0);
+	    tev.kind = ((ev.xkey.type == KeyPress) ? TwinEventKeyDown
+		: TwinEventKeyUp);
+	    twin_screen_dispatch (tx->screen, &tev);
+	    break;
 	case MotionNotify:
 	    tev.u.pointer.screen_x = ev.xmotion.x;
 	    tev.u.pointer.screen_y = ev.xmotion.y;
