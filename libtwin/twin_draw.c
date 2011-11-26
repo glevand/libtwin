@@ -644,7 +644,7 @@ void twin_composite (twin_pixmap_t	*dst,
 static twin_argb32_t _twin_apply_alpha(twin_argb32_t v)
 {
     uint16_t t1, t2, t3;
-    twin_a8_t alpha = twin_get_8(v, (__BYTE_ORDER == __BIG_ENDIAN) ? 24 : 0);
+    twin_a8_t alpha = twin_get_8(v, (__BYTE_ORDER == __BIG_ENDIAN) ? 0 : 24);
 
     /* clear RGB data if alpha is zero */
 
@@ -655,14 +655,14 @@ static twin_argb32_t _twin_apply_alpha(twin_argb32_t v)
 
     if (__BYTE_ORDER == __BIG_ENDIAN)
 	return alpha << 24 |
-	    twin_int_mult(twin_get_8(v, 16), alpha, t1) << 16 |
-	    twin_int_mult(twin_get_8(v, 8), alpha, t2) << 8 |
-	    twin_int_mult(twin_get_8(v, 0), alpha, t3) << 0;
+	    twin_int_mult(twin_get_8(v, 24), alpha, t1) << 16 |
+	    twin_int_mult(twin_get_8(v, 16), alpha, t2) << 8 |
+	    twin_int_mult(twin_get_8(v, 8), alpha, t3) << 0;
 
-    return alpha << 24 |
-	twin_int_mult(twin_get_8(v, 8), alpha, t1) << 16 |
-	twin_int_mult(twin_get_8(v, 16), alpha, t2) << 8 |
-	twin_int_mult(twin_get_8(v, 24), alpha, t3) << 0;
+	return alpha << 24 |
+	    twin_int_mult(twin_get_8(v, 0), alpha, t1) << 16 |
+	    twin_int_mult(twin_get_8(v, 8), alpha, t2) << 8 |
+	    twin_int_mult(twin_get_8(v, 16), alpha, t3) << 0;
 }
 
 void twin_premultiply_alpha(twin_pixmap_t *px)

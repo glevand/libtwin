@@ -137,8 +137,6 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 	case TWIN_ARGB32:
 		if (ctype == PNG_COLOR_TYPE_RGB)
 			png_set_filler(png, 0xff, PNG_FILLER_BEFORE);
-		if (ctype == PNG_COLOR_TYPE_RGB_ALPHA)
-			png_set_swap_alpha(png);
 		if (ctype == PNG_COLOR_TYPE_GRAY ||
 		    ctype == PNG_COLOR_TYPE_GRAY_ALPHA)
 			png_set_gray_to_rgb(png);
