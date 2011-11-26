@@ -44,7 +44,11 @@ typedef struct _twin_x11 {
  */
 
 twin_x11_t *
-twin_x11_create (Display *dpy, int width, int height);
+twin_x11_create_ext (Display *dpy, int width, int height, int handle_events);
+
+static inline twin_x11_t *
+twin_x11_create (Display *dpy, int width, int height)
+	{return twin_x11_create_ext(dpy, width, height, 1);}
 
 void
 twin_x11_destroy (twin_x11_t *tx);
@@ -57,5 +61,8 @@ twin_x11_configure (twin_x11_t *tx, XConfigureEvent *ev);
 
 void
 twin_x11_update (twin_x11_t *tx);
+
+twin_bool_t
+twin_x11_process_events (twin_x11_t *tx);
 
 #endif /* _TWIN_X11_H_ */

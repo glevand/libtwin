@@ -141,7 +141,7 @@ twin_x11_work (void *closure)
 }
 
 twin_x11_t *
-twin_x11_create (Display *dpy, int width, int height)
+twin_x11_create_ext (Display *dpy, int width, int height, int handle_events)
 {
     twin_x11_t		    *tx;
     int			    scr = DefaultScreen (dpy);
@@ -161,7 +161,8 @@ twin_x11_create (Display *dpy, int width, int height)
     tx->visual = DefaultVisual (dpy, scr);
     tx->depth = DefaultDepth (dpy, scr);
 
-    twin_set_file (twin_x11_read_events,
+    if (handle_events)
+	    twin_set_file (twin_x11_read_events,
 		      ConnectionNumber (dpy),
 		      TWIN_READ,
 		      tx);
@@ -232,4 +233,16 @@ void
 twin_x11_update (twin_x11_t *tx)
 {
     twin_screen_update (tx->screen);
+}
+
+twin_bool_t
+twin_x11_process_events (twin_x11_t *tx)
+{
+    twin_bool_t result;
+
+    _twin_run_work();
+    result = twin_x11_read_events(ConnectionNumber(tx->dpy), 0, tx);
+    _twin_run_work();
+
+    return result;
 }
