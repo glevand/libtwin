@@ -188,19 +188,6 @@ _twin_widget_contains (twin_widget_t	*widget,
 	    0 <= y && y < _twin_widget_height(widget)); 
 }
 
-static twin_path_t *
-_twin_path_bevel_shape (twin_shape_t	shape,
-			twin_bool_t	upper,
-			twin_coord_t	left,
-			twin_coord_t	top,
-			twin_coord_t	right,
-			twin_coord_t	bottom,
-			twin_fixed_t	radius,
-			twin_fixed_t	bw)
-{
-    return 0;
-}
-
 void
 _twin_widget_bevel (twin_widget_t   *widget,
 		    twin_fixed_t    b,
