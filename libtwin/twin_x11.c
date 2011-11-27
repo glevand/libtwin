@@ -80,9 +80,9 @@ _twin_x11_put_span (twin_coord_t    left,
 }
 
 static twin_bool_t
-twin_x11_read_events (int		file,
-		      twin_file_op_t	ops,
-		      void		*closure)
+twin_x11_read_events (int maybe_unused file,
+		      twin_file_op_t maybe_unused ops,
+		      void *closure)
 {
     twin_x11_t		    *tx = closure;
 

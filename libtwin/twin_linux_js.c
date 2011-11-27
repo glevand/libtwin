@@ -31,6 +31,7 @@
 #include <linux/joystick.h>
 
 #include "twin.h"
+#include "twinint.h"
 #include "twin_linux_js.h"
 
 #define DEBUG(fmt...)	printf(fmt)
@@ -40,8 +41,9 @@ struct twin_js_dev {
 	twin_screen_t *screen;
 };
 
-static twin_bool_t twin_linux_js_events(int file, twin_file_op_t ops,
-					   void *closure)
+static twin_bool_t twin_linux_js_events(int maybe_unused file,
+					twin_file_op_t maybe_unused ops,
+					void *closure)
 {
 	struct twin_js_dev *js = closure;
 	struct js_event js_event;

@@ -26,6 +26,8 @@
 #include "twin_def.h"
 #include <string.h>
 
+#define maybe_unused __attribute__((unused))
+
 /*
  * Post-transformed points are stored in 12.4 fixed point
  * values

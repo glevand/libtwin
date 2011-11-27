@@ -156,7 +156,8 @@ _twin_hull_vertex_compare (const void *av, const void *bv)
 }
 
 static int
-_twin_hull_prev_valid (twin_hull_t *hull, int num_hull, int index)
+_twin_hull_prev_valid (twin_hull_t *hull, int maybe_unused num_hull,
+		       int index)
 {
     do {
 	/* hull[0] is always valid, so don't test and wraparound */

@@ -141,7 +141,8 @@ twin_screen_damaged (twin_screen_t *screen)
 }
 
 static void
-twin_screen_span_pixmap(twin_screen_t *screen, twin_argb32_t *span,
+twin_screen_span_pixmap(twin_screen_t maybe_unused *screen,
+			twin_argb32_t *span,
 			twin_pixmap_t *p, twin_coord_t y,
 			twin_coord_t left, twin_coord_t right,
 			twin_src_op op16, twin_src_op op32)

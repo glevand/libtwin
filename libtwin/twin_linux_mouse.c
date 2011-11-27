@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <math.h>
 
+#include "twinint.h"
 #include "twin_linux_mouse.h"
 
 #define QUADRATIC_ACCELERATION		1
@@ -82,7 +83,8 @@ static void twin_linux_mouse_accel(twin_linux_mouse_t *tm, int *dx, int *dy)
 	*dy = twin_fixed_to_int(twin_fixed_mul(accel, twin_int_to_fixed(*dy)));
 }
 
-static twin_bool_t twin_linux_mouse_events(int file, twin_file_op_t ops,
+static twin_bool_t twin_linux_mouse_events(int file,
+					   twin_file_op_t maybe_unused ops,
 					   void *closure)
 {
 	twin_linux_mouse_t *tm = closure;
