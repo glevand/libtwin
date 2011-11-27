@@ -51,6 +51,7 @@
 #endif
 
 #include "twin.h"
+#include "twinint.h"
 
 /* Make something better here ! */
 
@@ -159,7 +160,8 @@ twin_pixmap_t *twin_get_default_cursor(int *hx, int *hy)
 
 static inline int twin_read_header(fdtype fd, uint32_t *buf, int size)
 {
-	int i, len;
+	int len;
+	int maybe_unused i;
 
 	len = cursor_read(fd, buf, size);
 	if (len != size)
@@ -181,7 +183,7 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 	twin_pixmap_t	*cur = NULL;	
 
 	fd = cursor_open(file);
-	if (fd < 0)
+	if (fd < (fdtype)0)
 		return NULL;
 	if (!twin_read_header(fd, buffer, XCURSOR_FILE_HEADER_LEN))
 		goto bail;
@@ -241,7 +243,7 @@ twin_pixmap_t *twin_load_X_cursor(const char *file, int index,
 	/* load pixels */
 	size = buffer[4] * buffer[5] * 4;
 	cursor_seek(fd, filepos + buffer[0], SEEK_SET);
-	if (cursor_read(fd, cur->p.v, size) != size) {
+	if (cursor_read(fd, cur->p.v, size) != (int)size) {
 		twin_pixmap_destroy(cur);
 		goto bail;
 	}

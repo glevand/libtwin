@@ -45,24 +45,25 @@ typedef struct  _twin_png_priv {
 static void twin_png_read_fn(png_structp png, png_bytep data, png_size_t size)
 {
 	twin_png_priv_t	*priv = png_get_io_ptr(png);
-	int n;
+	ssize_t n;
 
 	n = read(priv->fd, data, size);
 	DEBUG(" twin_png_read_fn size=%d, got=%d\n", size, n);
-	if (n < size)
+	if (n <= 0 || (png_size_t)n < size)
 		png_error(png, "end of file !\n");	
 }
 
 twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 {
 	uint8_t		signature[8];
-	int		fd, i, rb = 0;
+	int		fd, rb = 0;
 	size_t		n;
 	png_structp	png = NULL;
 	png_infop	info = NULL;
 	twin_pixmap_t	*pix = NULL;
 	twin_png_priv_t priv;
 	png_uint_32	width, height;
+	png_uint_32	i;
 	int		depth, ctype, interlace;
 	png_bytep	*rowp = NULL;
 

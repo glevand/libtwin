@@ -278,7 +278,8 @@ static void twin_fbdev_vtswitch(int sig)
 	vt_switch_pending = 1;
 }
 
-static twin_bool_t twin_fbdev_read_events(int file, twin_file_op_t ops,
+static twin_bool_t twin_fbdev_read_events(int file,
+					  twin_file_op_t maybe_unused ops,
 					  void *closure)
 {
 	twin_fbdev_t *tf = closure;

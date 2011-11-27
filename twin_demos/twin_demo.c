@@ -21,6 +21,7 @@
 
 #include <twin_demo.h>
 
+#define maybe_unused __attribute__((unused))
 #define D(x) twin_double_to_fixed(x)
 
 #if 0
@@ -96,7 +97,7 @@ twin_line_start (twin_screen_t *screen, int x, int y, int w, int h)
     twin_window_show (window);
 }
 
-static void
+static void maybe_unused
 twin_circletext_start (twin_screen_t *screen, int x, int y, int w, int h)
 {
     twin_window_t   *window = twin_window_create (screen, TWIN_ARGB32,
@@ -141,7 +142,7 @@ twin_circletext_start (twin_screen_t *screen, int x, int y, int w, int h)
     twin_window_show (window);
 }
 
-static void
+static void maybe_unused
 twin_quickbrown_start (twin_screen_t *screen, int x, int y, int w, int h)
 {
     twin_window_t   *window = twin_window_create (screen, TWIN_ARGB32,
@@ -190,7 +191,7 @@ twin_quickbrown_start (twin_screen_t *screen, int x, int y, int w, int h)
     twin_window_show (window);
 }
 
-static void
+static void maybe_unused
 twin_ascii_start (twin_screen_t *screen, int x, int y, int w, int h)
 {
     twin_window_t   *window = twin_window_create (screen, TWIN_ARGB32,
@@ -244,7 +245,7 @@ twin_ascii_start (twin_screen_t *screen, int x, int y, int w, int h)
     twin_window_show (window);
 }
 
-static void
+static void maybe_unused
 twin_jelly_start (twin_screen_t *screen, int x, int y, int w, int h)
 {
     twin_window_t   *window = twin_window_create (screen, TWIN_ARGB32,
@@ -302,7 +303,7 @@ twin_jelly_start (twin_screen_t *screen, int x, int y, int w, int h)
 }
 
 void
-twin_demo_start (twin_screen_t *screen, const char *name, int x, int y, int w, int h)
+twin_demo_start (twin_screen_t *screen, const char maybe_unused *name, int x, int y, int w, int h)
 {
 #if 0
     twin_circletext_start (screen, x, y, w, h);

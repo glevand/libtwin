@@ -213,7 +213,7 @@ _twin_clock_paint (twin_clock_t *clock)
 }
 
 static twin_time_t
-_twin_clock_timeout (twin_time_t now, void *closure)
+_twin_clock_timeout (twin_time_t maybe_unused now, void *closure)
 {
     twin_clock_t   *clock = closure;
     _twin_widget_queue_paint (&clock->widget);

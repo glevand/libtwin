@@ -23,8 +23,10 @@
 #include <time.h>
 #include <string.h>
 
+#define maybe_unused __attribute__((unused))
+
 static twin_time_t
-_twin_hello_timeout (twin_time_t now, void *closure)
+_twin_hello_timeout (twin_time_t maybe_unused now, void *closure)
 {
     twin_label_t    *labelb = closure;
     time_t	    secs = time (0);

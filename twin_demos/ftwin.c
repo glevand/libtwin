@@ -40,6 +40,8 @@
 #include "twin_fbdev.h"
 #include "twin_linux_mouse.h"
 
+#define maybe_unused __attribute__((unused))
+
 twin_fbdev_t *tf;
 
 static void exitfunc(void)
@@ -49,13 +51,13 @@ static void exitfunc(void)
 	tf = NULL;
 }
 
-static void sigint(int sig)
+static void sigint(int maybe_unused sig)
 {
 	exitfunc();
 	syscall(__NR_exit);
 }
 
-int main (int argc, char **argv)
+int main (void)
 {
 	int hx, hy;
 	twin_pixmap_t *cur;

@@ -152,7 +152,7 @@ argb32_to_a8 (twin_argb32_t v)
 
 #define msk_c		    (argb32_to_a8 (msk.c))
 #define msk_argb32	    (argb32_to_a8 (*msk.p.argb32++))
-#define msk_rgb16	    (0xff)
+#define msk_rgb16	    (0xff); (void)msk
 #define msk_a8		    (*msk.p.a8++)
 
 #define cat2(a,b) a##b

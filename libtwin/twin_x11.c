@@ -181,7 +181,7 @@ twin_x11_create_ext (Display *dpy, int width, int height, int handle_events)
     wm_name.value = (unsigned char *) argv[0];
     wm_name.encoding = XA_STRING;
     wm_name.format = 8;
-    wm_name.nitems = strlen (wm_name.value) + 1;
+    wm_name.nitems = strlen ((char *)wm_name.value) + 1;
     icon_name = wm_name;
 
     tx->win = XCreateWindow (dpy, RootWindow (dpy, scr),

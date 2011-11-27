@@ -38,7 +38,7 @@
 #define HEIGHT	512
 
 int
-main (int argc, char **argv)
+main (void)
 {
     Display	    *dpy = XOpenDisplay (0);
     twin_x11_t	    *x11;

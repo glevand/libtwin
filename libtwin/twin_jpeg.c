@@ -146,7 +146,7 @@ twin_pixmap_t *twin_jpeg_to_pixmap(const char *filepath, twin_format_t fmt)
 			memcpy(p.a8, rowbuf, rowstride);
 		else {
 			JSAMPLE		*s = *rowbuf;
-			unsigned int	i;
+			int	i;
 
 			for (i = 0; i < width; i++) {
 				unsigned int r, g, b;
