@@ -508,7 +508,8 @@ static void twin_fbdev_cleanup_vt(twin_fbdev_t *tf)
 	ioctl(tf->vt_fd, VT_WAITACTIVE, tf->vt_prev);
 }
 
-twin_fbdev_t *twin_fbdev_create(int wanted_vt, int switch_sig)
+twin_fbdev_t *twin_fbdev_create_ext(int wanted_vt, int switch_sig,
+	int handle_events)
 {
 	twin_fbdev_t *tf;
 
@@ -535,7 +536,8 @@ twin_fbdev_t *twin_fbdev_create(int wanted_vt, int switch_sig)
 
 	twin_set_work(twin_fbdev_work, TWIN_WORK_REDISPLAY, tf);
 
-	twin_set_file(twin_fbdev_read_events, tf->vt_fd, TWIN_READ, tf);
+	if (handle_events)
+		twin_set_file(twin_fbdev_read_events, tf->vt_fd, TWIN_READ, tf);
 
 #ifdef _IMMEDIATE_REFRESH
 	twin_screen_register_damaged(tf->screen, twin_fbdev_damaged, tf);
@@ -585,5 +587,17 @@ twin_bool_t twin_fbdev_activate(twin_fbdev_t *tf)
 	 * the fbdev configuration
 	 */
 	return tf->active;
+}
+
+twin_bool_t
+twin_fbdev_process_events (twin_fbdev_t *tf)
+{
+    twin_bool_t result;
+
+    _twin_run_work();
+    result = twin_fbdev_read_events(tf->vt_fd, 0, tf);
+    _twin_run_work();
+
+    return result;
 }
 

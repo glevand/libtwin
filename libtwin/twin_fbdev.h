@@ -53,9 +53,10 @@ typedef struct _twin_fbdev {
 } twin_fbdev_t;
 
 /**
- * twin_fbdev_create - create the fbdev backend
+ * twin_fbdev_create_ext - create the fbdev backend
  * @wanted_vt:	which VT do you want ? pass -1 for auto-choose
  * @switch_sig: signal for use internally for vt switch
+ * @handle_events: Flag to use twin's internel event polling mechanism (blocking)
  *
  * The new VT is not activated automatically. You can call
  * twin_fbdev_activate() to do that. That way, you can setup your
@@ -71,9 +72,23 @@ typedef struct _twin_fbdev {
  *
  * Regarding the signal passed in switch_sig, it's the responsibility
  * of the caller to make sure it's not blocked.
+ *
+ * When a zero handle_events is passed application programs need to call
+ * twin_fbdev_process_events() at the apropriate time to process outstanding
+ * device events.
  */
 
-twin_fbdev_t *twin_fbdev_create(int wanted_vt, int switch_sig);
+twin_fbdev_t *twin_fbdev_create_ext(int wanted_vt, int switch_sig,
+	int handle_events);
+
+/**
+ * twin_fbdev_create - create the fbdev backend with twin's event polling
+ */
+
+ static inline twin_fbdev_t *twin_fbdev_create(int wanted_vt, int switch_sig)
+{
+	return twin_fbdev_create_ext(wanted_vt, switch_sig, 1);
+}
 
 /**
  * twin_fbdev_destroy - distroy the fbdev backend
@@ -92,5 +107,11 @@ void twin_fbdev_destroy(twin_fbdev_t *tf);
  */
 twin_bool_t twin_fbdev_activate(twin_fbdev_t *tf);
 
+/**
+ * twin_fbdev_process_events - process queued twin events
+ * @tf: backend pointed returned by twin_fbdev_create
+ */
+twin_bool_t
+twin_fbdev_process_events (twin_fbdev_t *tf);
 
 #endif /* _TWIN_FBDEV_H_ */
