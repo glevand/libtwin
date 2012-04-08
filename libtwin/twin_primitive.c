@@ -64,7 +64,7 @@ in_over (twin_argb32_t	dst,
     }
     return dst;
 }
-    
+
 static twin_argb32_t __inline
 in (twin_argb32_t   src,
     twin_a8_t	    msk)
@@ -76,7 +76,7 @@ in (twin_argb32_t   src,
 	    twin_in(src,16,msk,t3) |
 	    twin_in(src,24,msk,t4));
 }
-    
+
 static twin_argb32_t __inline
 over (twin_argb32_t	dst,
       twin_argb32_t	src)
@@ -273,7 +273,10 @@ make_twin_op_dsts_srcs(source)
 #define VUNALIGNED(p)	(((unsigned long)(p)) & 0xf)
 
 
-/* Altivec over function, some bits inspired by SDL */
+/*
+ * over_v: Altivec over function, some bits inspired by SDL
+ */
+
 static inline vector unsigned int over_v (vector unsigned char dst,
 					  vector unsigned char src
 					  )
@@ -286,7 +289,7 @@ static inline vector unsigned int over_v (vector unsigned char dst,
     vector unsigned char alpha, alphainv;
     vector unsigned short dmule, dmulo;
     const vector unsigned short v80 = vec_sl(vec_splat_u16(1), vec_splat_u16(7));
-    const vector unsigned short v8= vec_splat_u8(8);
+    const vector unsigned short v8 = vec_splat_u8(8);
 
     /* get source alpha values all over the vector */
     alpha = vec_perm(src, src, alphasplit);
@@ -317,7 +320,6 @@ void _twin_vec_argb32_over_argb32 (twin_pointer_t 	dst,
     twin_argb32_t   		src32;
     vector unsigned char 	edgeperm;
     vector unsigned char	src0v, src1v, srcv, dstv;
-    
 
     /* Go scalar for small amounts as I can't be bothered */
     if (width <  8) {
@@ -367,7 +369,6 @@ void _twin_vec_argb32_source_argb32 (twin_pointer_t	dst,
     twin_argb32_t   		src32;
     vector unsigned char 	edgeperm;
     vector unsigned char	src0v, src1v, srcv;
-    
 
     /* first run scalar until destination is aligned */
     while (VUNALIGNED(dst.v) && width--) {
