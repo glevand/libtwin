@@ -1,6 +1,19 @@
 AM_CFLAGS = @WARN_CFLAGS@ @ALTIVEC_CFLAGS@
 
-EXTRA_PROGRAMS =
+extra_dist_files = \
+	libtwin/twin_thread.c \
+	twin_demos/ftwin.cursor \
+	twin_demos/twinperf.c \
+	twin_fedit/Makefile \
+	twin_fedit/nchars \
+	twin_fedit/twin-fedit.c \
+	twin_fedit/twin-fedit.h \
+	twin_fedit/twin-sfit.c \
+	twin_ttf/Vera.ttf
+
+EXTRA_DIST = architecture autogen.sh $(extra_dist_files)
+
+EXTRA_PROGRAMS = 
 
 bin_PROGRAMS =
 lib_LTLIBRARIES = libtwin/libtwin.la
@@ -38,8 +51,7 @@ libtwin_libtwin_la_SOURCES = \
 	libtwin/twin_widget.c \
 	libtwin/twin_window.c \
 	libtwin/twin_work.c \
-	libtwin/twinint.h \
-	twin_def.h
+	libtwin/twinint.h
 
 if TWIN_X11
 pkginclude_HEADERS += libtwin/twin_x11.h
