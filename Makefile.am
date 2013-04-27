@@ -73,6 +73,11 @@ pkginclude_HEADERS += libtwin/twin_linux_js.h
 libtwin_libtwin_la_SOURCES += libtwin/twin_linux_js.c
 endif
 
+if TWIN_TOUCHSCREEN
+pkginclude_HEADERS += libtwin/twin_linux_touch.h
+libtwin_libtwin_la_SOURCES += libtwin/twin_linux_touch.c
+endif
+
 if TWIN_PNG
 pkginclude_HEADERS += libtwin/twin_png.h
 libtwin_libtwin_la_SOURCES += libtwin/twin_png.c

@@ -39,6 +39,7 @@
 
 #include "twin_fbdev.h"
 #include "twin_linux_mouse.h"
+#include "twin_linux_touch.h"
 
 #define maybe_unused __attribute__((unused))
 
@@ -72,6 +73,7 @@ int main (void)
 	signal(SIGINT, sigint);
 
 	twin_linux_mouse_create(NULL, tf->screen);
+	twin_linux_touch_create(NULL, tf->screen);
 
 	cur = twin_load_X_cursor("ftwin.cursor", 0, &hx, &hy);
 	if (cur == NULL)
