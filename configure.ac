@@ -119,7 +119,7 @@ AC_ARG_ENABLE(png,
 
 if test "x$twin_png" = "xyes"
 then
-	PKG_CHECK_MODULES(PNG, libpng12, twin_png="yes", twin_png="no")
+	PKG_CHECK_MODULES(PNG, libpng, twin_png="yes", twin_png="no")
 fi
 
 AC_SUBST(PNG_CFLAGS)

@@ -105,7 +105,7 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 	DEBUG("reading picture infos ...\n");
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &ctype, &interlace,
-		     int_p_NULL, int_p_NULL);
+		     NULL, NULL);
 	
 	DEBUG(" 1- size/depth/ctype/int = %ldx%ld/%d/%d/%d\n",
 	      width, height, depth, ctype, interlace);
@@ -115,12 +115,12 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 	if (ctype == PNG_COLOR_TYPE_PALETTE)
 		png_set_palette_to_rgb(png);
 	if (ctype == PNG_COLOR_TYPE_GRAY && depth < 8)
-		png_set_gray_1_2_4_to_8(png);
+		png_set_expand_gray_1_2_4_to_8(png);
 	if (png_get_valid(png, info, PNG_INFO_tRNS))
 		png_set_tRNS_to_alpha(png);
 
 	png_get_IHDR(png, info, &width, &height, &depth, &ctype, &interlace,
-		     int_p_NULL, int_p_NULL);
+		     NULL, NULL);
 
 	DEBUG(" 2- size/depth/ctype/int = %ldx%ld/%d/%d/%d\n",
 	      width, height, depth, ctype, interlace);
@@ -143,7 +143,7 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
 			png_set_gray_to_rgb(png);
 
 		png_get_IHDR(png, info, &width, &height, &depth, &ctype,
-			     &interlace, int_p_NULL, int_p_NULL);
+			     &interlace, NULL, NULL);
 
 		DEBUG(" 3- size/depth/ctype/int = %ldx%ld/%d/%d/%d\n",
 		      width, height, depth, ctype, interlace);
@@ -178,7 +178,7 @@ twin_pixmap_t *twin_png_to_pixmap(const char *filepath, twin_format_t fmt)
  fail_free:
 	if (rowp)
 		free(rowp);
-	png_destroy_read_struct(&png, &info, png_infopp_NULL);
+	png_destroy_read_struct(&png, &info, NULL);
  fail_close:
 	close(fd);
  fail:
