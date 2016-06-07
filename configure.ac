@@ -25,7 +25,7 @@ AC_PREREQ([2.69])
 
 AC_INIT([libtwin],[0.0.3],[Geoff Levand <geoff@infradead.org>])
 AC_CONFIG_AUX_DIR(.)
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([subdir-objects])
 AM_MAINTAINER_MODE
 
 # Library versioning info
