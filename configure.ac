@@ -21,9 +21,9 @@ dnl
 dnl
 dnl Process this file with autoconf to create configure.
 
-AC_PREREQ([2.57])
+AC_PREREQ([2.69])
 
-AC_INIT([libtwin], [0.0.3], [Geoff Levand <geoff@infradead.org>])
+AC_INIT([libtwin],[0.0.3],[Geoff Levand <geoff@infradead.org>])
 AC_CONFIG_AUX_DIR(.)
 AM_INIT_AUTOMAKE()
 AM_MAINTAINER_MODE
@@ -53,7 +53,7 @@ AC_SUBST(WARN_CFLAGS)
 
 # Check for X
 AC_ARG_ENABLE(x11,
-	AC_HELP_STRING([--disable-x11],
+	AS_HELP_STRING([--disable-x11],
 		[Disable x11 support (default=enabled)]),
 	twin_x11="$enableval", twin_x11="yes")
 
@@ -66,7 +66,7 @@ AC_SUBST(X_LIBS)
 
 # Check for linux framebuffer includes
 AC_ARG_ENABLE(fbdev,
-	AC_HELP_STRING([--disable-fbdev],
+	AS_HELP_STRING([--disable-fbdev],
 		[Disable framebuffer support (default=enabled)]),
 	twin_fb="$enableval", twin_fb="yes")
 
@@ -77,25 +77,25 @@ fi
 
 # linux mouse
 AC_ARG_ENABLE(linux-mouse,
-	AC_HELP_STRING([--disable-linux-mouse],
+	AS_HELP_STRING([--disable-linux-mouse],
 		[Disable linux mouse support (default=enabled)]),
 	twin_mouse="$enableval", twin_mouse="yes")
 
 # linux joystick
 AC_ARG_ENABLE(linux-joystick,
-	AC_HELP_STRING([--disable-linux-joystick],
+	AS_HELP_STRING([--disable-linux-joystick],
 		[Disable linux joystick support (default=enabled)]),
 	twin_joystick="$enableval", twin_joystick="yes")
 
 # linux touchscreen
 AC_ARG_ENABLE(linux-touchscreen,
-	AC_HELP_STRING([--disable-linux-touchscreen],
+	AS_HELP_STRING([--disable-linux-touchscreen],
 		[Disable linux touchscreen support (default=enabled)]),
 	twin_touchscreen="$enableval", twin_touchscreen="yes")
 
 # zlib
 AC_ARG_ENABLE(zlib,
-	AC_HELP_STRING([--disable-zlib],
+	AS_HELP_STRING([--disable-zlib],
 		[Disable zlib support (default=enabled)]),
 	twin_zlib="$enableval", twin_zlib="yes")
 AH_TEMPLATE(HAVE_ZLIB, [Define if the zlib compression library is available])
@@ -113,7 +113,7 @@ fi
 
 # png support
 AC_ARG_ENABLE(png,
-	AC_HELP_STRING([--disable-png],
+	AS_HELP_STRING([--disable-png],
 		[Disable png support (default=enabled)]),
 	twin_png="$enableval", twin_png="yes")
 
@@ -127,7 +127,7 @@ AC_SUBST(PNG_LIBS)
 
 # jpeg support
 AC_ARG_ENABLE(jpeg,
-	AC_HELP_STRING([--disable-jpeg],
+	AS_HELP_STRING([--disable-jpeg],
 		[Disable jpeg support (default=enabled)]),
 	twin_jpeg="$enableval", twin_jpeg="yes")
 
@@ -143,7 +143,7 @@ fi
 
 # Check for freetype
 AC_ARG_ENABLE(twin-ttf,
-	AC_HELP_STRING([--disable-twin-ttf],
+	AS_HELP_STRING([--disable-twin-ttf],
 		[Don't build twin ttf font converter (default=enabled)]),
 	twin_ttf="$enableval", twin_ttf="yes")
 
@@ -156,7 +156,7 @@ AC_SUBST(FREETYPE_CFLAGS)
 
 # Altivec support
 AC_ARG_ENABLE(altivec,
-	AC_HELP_STRING([--enable-altivec],
+	AS_HELP_STRING([--enable-altivec],
 		[Enable altivec support (default=detect)]),
 	twin_altivec="$enableval")
 
@@ -165,8 +165,9 @@ then
 	AC_MSG_CHECKING([for altivec support])
 	CFLAGS_save="$CFLAGS"
 	CFLAGS="$CFLAGS -maltivec"
-	AC_TRY_COMPILE([#include <altivec.h>],
-		[vector unsigned int v = vec_splat_u32(0)],
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+			[#include <altivec.h>],
+			[vector unsigned int v = vec_splat_u32(0)])],
 		twin_altivec=yes,
 		twin_altivec=no)
 	CFLAGS="$CFLAGS_save"
@@ -212,5 +213,6 @@ AC_MSG_NOTICE([linux joystick: $twin_joystick])
 AC_MSG_NOTICE([linux touch:    $twin_touchscreen])
 AC_MSG_NOTICE([altivec:        $twin_altivec])
 
-AC_OUTPUT([Makefile
+AC_CONFIG_FILES([Makefile
            libtwin.pc])
+AC_OUTPUT
