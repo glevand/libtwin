@@ -37,6 +37,11 @@ AC_SUBST(LIB_VERSION)
 
 AM_CONFIG_HEADER(twin_def.h)
 
+# use pretty build output with automake >= 1.11
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],
+	[AM_DEFAULT_VERBOSITY=1
+	AC_SUBST(AM_DEFAULT_VERBOSITY)])
+
 # Check for progs
 AC_PROG_CC
 AC_PROG_LIBTOOL
