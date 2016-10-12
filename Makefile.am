@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 AM_CFLAGS = @WARN_CFLAGS@ @ALTIVEC_CFLAGS@
 
 extra_dist_files = \
@@ -143,3 +145,9 @@ twin_ttf_twin_ttf_SOURCES = \
 twin_ttf_twin_ttf_LDADD = @FREETYPE_LIBS@ -lm
 twin_ttf_twin_ttf_CFLAGS = -g @WARN_CFLAGS@
 twin_ttf_twin_ttf_CPPFLAGS = @FREETYPE_CFLAGS@ -I$(top_srcdir)/twin_ttf
+
+MAINTAINERCLEANFILES = Makefile.in aclocal.m4 compile config.* configure \
+	depcomp install-sh ltmain.sh missing twin_def.h.in* $(PACKAGE)-*.gz
+
+maintainer-clean-local:
+	rm -rf m4
